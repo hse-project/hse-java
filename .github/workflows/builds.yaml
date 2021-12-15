@@ -1,0 +1,140 @@
+name: Builds
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - "**.md"
+      - .clang-format
+      - .gitattributes
+      - .gitignore
+      - .shellcheckrc
+      - LICENSE
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths-ignore:
+      - "**.md"
+      - .clang-format
+      - .gitattributes
+      - .gitignore
+      - .shellcheckrc
+      - LICENSE
+
+env:
+  MESON_TESTTHREADS: 1
+
+jobs:
+  ubuntu:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
+        buildtype: [release, debug]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Initialize
+        run: |
+          sudo apt-get update
+          sudo apt-get install build-essential ninja-build pkg-config maven openjdk-8-jdk libbsd-dev libmicrohttpd-dev liburcu-dev libyaml-dev liblz4-dev libcurl4-openssl-dev
+          sudo python3 -m pip install meson
+
+      - name: Setup
+        run: |
+          meson builddir -Dbuildtype=${{ matrix.buildtype }} --fatal-meson-warnings -Dwerror=true
+
+      - name: Build
+        run: |
+          ninja -C builddir
+
+      - name: Test
+        run: |
+          meson test -C builddir --setup=ci --print-errorlogs --no-stdsplit
+
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: build-artifact-${{ matrix.os }}-${{ matrix.buildtype }}
+          path: builddir/meson-logs/
+
+  fedora:
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:${{ matrix.image-tag }}
+      options: --privileged  -v /usr/src:/usr/src -v /lib/modules:/lib/modules
+    strategy:
+      fail-fast: false
+      matrix:
+        image-tag: [35]
+        buildtype: [release, debug]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Initialize
+        run: |
+          dnf install -y git ninja-build meson pkg-config maven java-1.8.0-openjdk-devel libmicrohttpd-devel userspace-rcu-devel libyaml-devel lz4-devel libbsd-devel libcurl-devel
+          dnf install -y xz cmake make automake gcc gcc-c++ kernel-devel
+          dnf install -y libxml2-devel libxslt-devel
+
+      - name: Setup
+        run: |
+          meson builddir -Dbuildtype=${{ matrix.buildtype }} --fatal-meson-warnings -Dwerror=true
+
+      - name: Build
+        run: |
+          ninja -C builddir
+
+      - name: Test
+        run: |
+          meson test -C builddir --setup=ci --print-errorlogs --no-stdsplit
+
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: build-artifact-fedora-${{ matrix.image-tag }}-${{ matrix.buildtype }}
+          path: builddir/meson-logs/
+
+  almalinux:
+    runs-on: ubuntu-latest
+    container:
+      image: almalinux:${{ matrix.image-tag }}
+      options: --privileged  -v /usr/src:/usr/src -v /lib/modules:/lib/modules
+    strategy:
+      fail-fast: false
+      matrix:
+        image-tag: [8]
+        buildtype: [release, debug]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Initialize
+        run: |
+          dnf install -y sudo dnf-plugins-core epel-release
+          dnf config-manager --set-enabled powertools
+          dnf install -y git ninja-build pkg-config maven java-1.8.0-openjdk-devel libmicrohttpd-devel userspace-rcu-devel libyaml-devel lz4-devel libbsd-devel libcurl-devel
+          dnf install -y xz cmake make automake gcc gcc-c++ kernel-devel
+          dnf install -y python36 libxml2 libxslt
+          python3 -m pip install meson
+
+      - name: Setup
+        run: |
+          meson builddir -Dbuildtype=${{ matrix.buildtype }} --fatal-meson-warnings -Dwerror=true
+
+      - name: Build
+        run: |
+          ninja -C builddir
+
+      - name: Test
+        run: |
+          meson test -C builddir --setup=ci --print-errorlogs --no-stdsplit
+
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: build-artifact-almalinux-${{ matrix.image-tag }}-${{ matrix.buildtype }}
+          path: builddir/meson-logs/

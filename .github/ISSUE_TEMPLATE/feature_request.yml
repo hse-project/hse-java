@@ -1,0 +1,15 @@
+name: Feature Request
+labels: [feature-request]
+description: Describe the feature you would like added
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for your feature request. Please describe the feature in detail, why it would benefit the HSE community, and what use-cases it supports.
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Description
+      placeholder: A clear and concise description of the feature.
+    validations:
+      required: true

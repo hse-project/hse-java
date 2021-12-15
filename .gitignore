@@ -1,0 +1,9 @@
+/.cache/
+/*build*/
+/subprojects/*
+!/subprojects/packagefiles/
+!/subprojects/hse.wrap
+/target/
+/*venv*/
+*.log
+compile_commands.json

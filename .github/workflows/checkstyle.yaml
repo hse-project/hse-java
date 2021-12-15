@@ -1,0 +1,19 @@
+name: checkstyle
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Initialize
+        run: |
+          sudo apt-get install maven
+      - uses: actions/checkout@v2
+
+      - name: checkstyle
+        run: |
+          mvn checkstyle:check
