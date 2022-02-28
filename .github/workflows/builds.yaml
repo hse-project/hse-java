@@ -4,8 +4,12 @@ on:
   push:
     branches:
       - master
+      - v*.*
     paths-ignore:
       - "**.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/workflows/**"
+      - "!.github/workflows/builds.yaml"
       - .clang-format
       - .gitattributes
       - .gitignore
@@ -15,6 +19,9 @@ on:
     types: [opened, synchronize, reopened]
     paths-ignore:
       - "**.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/workflows/**"
+      - "!.github/workflows/builds.yaml"
       - .clang-format
       - .gitattributes
       - .gitignore
@@ -34,17 +41,32 @@ jobs:
         buildtype: [release, debug]
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout hse-java
+        uses: actions/checkout@v2
+
+      - name: Checkout HSE
+        uses: actions/checkout@v2
+        with:
+          repository: hse-project/hse
+          path: subprojects/hse
+          ref: ${{ github.base_ref || github.ref }}
+
+      - name: Post-checkout
+        run: |
+          git -C "subprojects/$b" checkout ${{ github.head_ref }} || true
 
       - name: Initialize
         run: |
           sudo apt-get update
-          sudo apt-get install build-essential ninja-build pkg-config maven openjdk-8-jdk libbsd-dev libmicrohttpd-dev liburcu-dev libyaml-dev liblz4-dev libcurl4-openssl-dev
+          sudo apt-get install build-essential ninja-build pkg-config maven \
+            openjdk-8-jdk libbsd-dev libmicrohttpd-dev liburcu-dev \
+            libyaml-dev liblz4-dev libcurl4-openssl-dev
           sudo python3 -m pip install meson
 
       - name: Setup
         run: |
-          meson builddir -Dbuildtype=${{ matrix.buildtype }} --fatal-meson-warnings -Dwerror=true
+          meson builddir -Dbuildtype=${{ matrix.buildtype }} \
+            --fatal-meson-warnings -Dwerror=true -Ddocs=enabled
 
       - name: Build
         run: |
@@ -52,12 +74,12 @@ jobs:
 
       - name: Test
         run: |
-          meson test -C builddir --setup=ci --print-errorlogs --no-stdsplit
+          meson test -C builddir --print-errorlogs --no-stdsplit
 
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
-          name: build-artifact-${{ matrix.os }}-${{ matrix.buildtype }}
+          name: ${{ matrix.os }}-${{ matrix.buildtype }}
           path: builddir/meson-logs/
 
   fedora:
@@ -72,17 +94,33 @@ jobs:
         buildtype: [release, debug]
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout hse-java
+        uses: actions/checkout@v2
+
+      - name: Checkout HSE
+        uses: actions/checkout@v2
+        with:
+          repository: hse-project/hse
+          path: subprojects/hse
+          ref: ${{ github.base_ref || github.ref }}
+
+      - name: Post-checkout
+        run: |
+          git -C "subprojects/$b" checkout ${{ github.head_ref }} || true
 
       - name: Initialize
         run: |
-          dnf install -y git ninja-build meson pkg-config maven java-1.8.0-openjdk-devel libmicrohttpd-devel userspace-rcu-devel libyaml-devel lz4-devel libbsd-devel libcurl-devel
-          dnf install -y xz cmake make automake gcc gcc-c++ kernel-devel
-          dnf install -y libxml2-devel libxslt-devel
+          dnf group install -y --with-optional \
+            "C Development Tools and Libraries"
+          dnf install -y git ninja-build meson pkg-config maven \
+            java-1.8.0-openjdk-devel libmicrohttpd-devel userspace-rcu-devel \
+            libyaml-devel lz4-devel libbsd-devel libcurl-devel libxml2-devel \
+            libxslt-devel
 
       - name: Setup
         run: |
-          meson builddir -Dbuildtype=${{ matrix.buildtype }} --fatal-meson-warnings -Dwerror=true
+          meson builddir -Dbuildtype=${{ matrix.buildtype }} \
+            --fatal-meson-warnings -Dwerror=true -Ddocs=enabled
 
       - name: Build
         run: |
@@ -90,12 +128,12 @@ jobs:
 
       - name: Test
         run: |
-          meson test -C builddir --setup=ci --print-errorlogs --no-stdsplit
+          meson test -C builddir --print-errorlogs --no-stdsplit
 
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
-          name: build-artifact-fedora-${{ matrix.image-tag }}-${{ matrix.buildtype }}
+          name: ${{ github.job }}-${{ matrix.image-tag }}-${{ matrix.buildtype }}
           path: builddir/meson-logs/
 
   almalinux:
@@ -110,20 +148,35 @@ jobs:
         buildtype: [release, debug]
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout hse-java
+        uses: actions/checkout@v2
+
+      - name: Checkout HSE
+        uses: actions/checkout@v2
+        with:
+          repository: hse-project/hse
+          path: subprojects/hse
+          ref: ${{ github.base_ref || github.ref }}
+
+      - name: Post-checkout
+        run: |
+          git -C "subprojects/$b" checkout ${{ github.head_ref }} || true
 
       - name: Initialize
         run: |
           dnf install -y sudo dnf-plugins-core epel-release
           dnf config-manager --set-enabled powertools
-          dnf install -y git ninja-build pkg-config maven java-1.8.0-openjdk-devel libmicrohttpd-devel userspace-rcu-devel libyaml-devel lz4-devel libbsd-devel libcurl-devel
-          dnf install -y xz cmake make automake gcc gcc-c++ kernel-devel
-          dnf install -y python36 libxml2 libxslt
+          dnf group install -y --with-optional "Development Tools"
+          dnf install -y git ninja-build pkg-config maven \
+            java-1.8.0-openjdk-devel libmicrohttpd-devel userspace-rcu-devel \
+            libyaml-devel lz4-devel libbsd-devel libcurl-devel python36 \
+            libxml2 libxslt
           python3 -m pip install meson
 
       - name: Setup
         run: |
-          meson builddir -Dbuildtype=${{ matrix.buildtype }} --fatal-meson-warnings -Dwerror=true
+          meson builddir -Dbuildtype=${{ matrix.buildtype }} \
+            --fatal-meson-warnings -Dwerror=true -Ddocs=enabled
 
       - name: Build
         run: |
@@ -131,10 +184,10 @@ jobs:
 
       - name: Test
         run: |
-          meson test -C builddir --setup=ci --print-errorlogs --no-stdsplit
+          meson test -C builddir --print-errorlogs --no-stdsplit
 
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
-          name: build-artifact-almalinux-${{ matrix.image-tag }}-${{ matrix.buildtype }}
+          name: ${{ github.job }}-${{ matrix.image-tag }}-${{ matrix.buildtype }}
           path: builddir/meson-logs/

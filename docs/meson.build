@@ -25,7 +25,7 @@ javadocs = custom_target(
         '-docencoding',
         'utf-8',
         '-keywords',
-        javac.version().version_compare('>1.8') ? [
+        javac.version().version_compare('>=11.0.0') ? [
             '--show-types',
             'public',
             '--show-members',
