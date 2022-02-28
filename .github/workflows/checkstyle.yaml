@@ -3,6 +3,8 @@ name: checkstyle
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    paths:
+      - "**.java"
 
 jobs:
   check:
@@ -12,6 +14,7 @@ jobs:
       - name: Initialize
         run: |
           sudo apt-get install maven
+
       - uses: actions/checkout@v2
 
       - name: checkstyle

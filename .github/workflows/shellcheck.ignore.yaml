@@ -1,0 +1,16 @@
+name: ShellCheck
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths-ignore:
+      - "**.sh"
+      - .github/workflows/shellcheck.yaml
+      - .shellcheckrc
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Skipping ${{ github.workflow }}/${{ github.job }}"

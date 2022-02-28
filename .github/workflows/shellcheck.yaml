@@ -5,14 +5,14 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - "**.sh"
-      - "scripts/git-hooks/*"
+      - .github/workflows/shellcheck.yaml
+      - .shellcheckrc
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     container:
       image: fedora:latest
-      options: --privileged -v /usr/src:/usr/src -v /lib/modules:/lib/modules
 
     steps:
       - uses: actions/checkout@v2
