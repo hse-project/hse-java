@@ -3,7 +3,11 @@
 /subprojects/*
 !/subprojects/packagefiles/
 !/subprojects/hse.wrap
+/.settings/
 /target/
 /*venv*/
 *.log
+/.classpath
+/.factorypath
+/.project
 compile_commands.json
