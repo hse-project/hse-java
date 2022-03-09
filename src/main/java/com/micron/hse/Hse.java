@@ -36,11 +36,12 @@ public final class Hse {
     }
 
     /**
-     * {@code config} defaults to {@code null}.
+     * Refer to {@code #init(Path, String...)}.
+     *
+     * <p>{@code config} defaults to {@code null}.</p>
      *
      * @param params List of parameters in key=value format.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #init(Path, String...)
      */
     public static void init(final String... params) throws HseException {
         init(null, params);

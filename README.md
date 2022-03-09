@@ -48,7 +48,7 @@ Add something like the following to your `pom.xml` or equivalent file:
 <dependency>
 ```
 
-## From Build
+### From Build
 
 The default install directory is `/opt/hse`[^1]. This can be overridden by
 configuring the build with either `-Dprefix=$prefix` or `--prefix=$prefix`.

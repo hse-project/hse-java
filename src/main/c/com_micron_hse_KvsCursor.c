@@ -43,6 +43,39 @@ Java_com_micron_hse_KvsCursor_create__J_3BIIJ(
 }
 
 jlong
+Java_com_micron_hse_KvsCursor_create__JLjava_lang_String_2IJ(
+    JNIEnv *env,
+    jclass  cursor_cls,
+    jlong   kvs_handle,
+    jstring filter,
+    jint    flags,
+    jlong   txn_handle)
+{
+    (void)cursor_cls;
+
+    struct hse_kvs_cursor *cursor = NULL;
+    struct hse_kvs        *kvs = (struct hse_kvs *)kvs_handle;
+    struct hse_kvdb_txn   *txn = (struct hse_kvdb_txn *)txn_handle;
+
+    const char *filter_data = NULL;
+    jsize       filter_len = 0;
+    if (filter) {
+        filter_data = (*env)->GetStringUTFChars(env, filter, NULL);
+        filter_len = (*env)->GetStringUTFLength(env, filter);
+    }
+
+    const hse_err_t err = hse_kvs_cursor_create(kvs, flags, txn, filter_data, filter_len, &cursor);
+
+    if (filter)
+        (*env)->ReleaseStringUTFChars(env, filter, filter_data);
+
+    if (err)
+        throw_new_hse_exception(env, err);
+
+    return (jlong)cursor;
+}
+
+jlong
 Java_com_micron_hse_KvsCursor_create__JLjava_nio_ByteBuffer_2IIIJ(
     JNIEnv *env,
     jclass  cursor_cls,
@@ -458,6 +491,52 @@ Java_com_micron_hse_KvsCursor_seek__J_3BII(
 }
 
 jbyteArray
+Java_com_micron_hse_KvsCursor_seek__JLjava_lang_String_2I(
+    JNIEnv *env,
+    jobject cursor_obj,
+    jlong   cursor_handle,
+    jstring key,
+    jint    flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    const char *key_data = NULL;
+    jsize       key_len = 0;
+    if (key) {
+        key_data = (*env)->GetStringUTFChars(env, key, NULL);
+        key_len = (*env)->GetStringUTFLength(env, key);
+    }
+
+    const void     *found = NULL;
+    size_t          found_len = 0;
+    const hse_err_t err = hse_kvs_cursor_seek(cursor, flags, key_data, key_len, &found, &found_len);
+
+    if (key)
+        (*env)->ReleaseStringUTFChars(env, key, key_data);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return NULL;
+    }
+
+    if (!found)
+        return NULL;
+
+    jbyteArray found_key = (*env)->NewByteArray(env, found_len);
+    (*env)->SetByteArrayRegion(env, found_key, 0, found_len, found);
+
+    /* Assert that no ArrayIndexOutOfBoundsException occurred. The byte array is
+     * constructed with a size of found_len, so the previous operation is
+     * infallible in theory.
+     */
+    assert(!(*env)->ExceptionCheck(env));
+
+    return found_key;
+}
+
+jbyteArray
 Java_com_micron_hse_KvsCursor_seek__JLjava_nio_ByteBuffer_2III(
     JNIEnv *env,
     jobject cursor_obj,
@@ -546,16 +625,7 @@ Java_com_micron_hse_KvsCursor_seek__J_3BI_3BII(
      */
     assert(!(*env)->ExceptionCheck(env));
 
-    /* Use the least-most bit to represent whether the key was found or not
-     * because 0-length values are different from non-existent keys.
-     *
-     * To get information out of the packed integer, do the following:
-     *
-     * int packedFoundLen = seek(...);
-     * boolean found = (packedFoundLen & 0b1) == 1;
-     * int foundLen = packedFoundLen >> 1;
-     */
-    return (found_len << 1 | 0x1);
+    return found_len;
 }
 
 jint
@@ -600,16 +670,100 @@ Java_com_micron_hse_KvsCursor_seek__J_3BILjava_nio_ByteBuffer_2III(
         memcpy(found_buf_data, found, copy_len);
     }
 
-    /* Use the least-most bit to represent whether the key was found or not
-     * because 0-length values are different from non-existent keys.
-     *
-     * To get information out of the packed integer, do the following:
-     *
-     * int packedFoundLen = seek(...);
-     * boolean found = (packedFoundLen & 0b1) == 1;
-     * int foundLen = packedFoundLen >> 1;
-     */
-    return (found_len << 1 | 0x1);
+    return found_len;
+}
+
+jint
+Java_com_micron_hse_KvsCursor_seek__JLjava_lang_String_2_3BII(
+    JNIEnv    *env,
+    jobject    cursor_obj,
+    jlong      cursor_handle,
+    jstring    key,
+    jbyteArray found_buf,
+    jint       found_buf_sz,
+    jint       flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    const char *key_data = NULL;
+    jsize       key_len = 0;
+    if (key) {
+        key_data = (*env)->GetStringUTFChars(env, key, NULL);
+        key_len = (*env)->GetStringUTFLength(env, key);
+    }
+
+    const void     *found = NULL;
+    size_t          found_len = 0;
+    const hse_err_t err = hse_kvs_cursor_seek(cursor, flags, key_data, key_len, &found, &found_len);
+
+    if (key)
+        (*env)->ReleaseStringUTFChars(env, key, key_data);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return 0;
+    }
+
+    if (!found)
+        return 0;
+
+    if (found_buf) {
+        const size_t copy_len = min((size_t)found_buf_sz, found_len);
+        (*env)->SetByteArrayRegion(env, found_buf, 0, copy_len, found);
+    }
+
+    return found_len;
+}
+
+jint
+Java_com_micron_hse_KvsCursor_seek__JLjava_lang_String_2Ljava_nio_ByteBuffer_2III(
+    JNIEnv *env,
+    jobject cursor_obj,
+    jlong   cursor_handle,
+    jstring key,
+    jobject found_buf,
+    jint    found_buf_sz,
+    jint    found_buf_pos,
+    jint    flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    const char *key_data = NULL;
+    jsize       key_len = 0;
+    if (key) {
+        key_data = (*env)->GetStringUTFChars(env, key, NULL);
+        key_len = (*env)->GetStringUTFLength(env, key);
+    }
+
+    const void     *found = NULL;
+    size_t          found_len = 0;
+    const hse_err_t err = hse_kvs_cursor_seek(cursor, flags, key_data, key_len, &found, &found_len);
+
+    if (key)
+        (*env)->ReleaseStringUTFChars(env, key, key_data);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return 0;
+    }
+
+    if (!found)
+        return 0;
+
+    if (found_buf) {
+        void *found_buf_data = (*env)->GetDirectBufferAddress(env, found_buf);
+
+        found_buf_data = (uint8_t *)found_buf_data + found_buf_pos;
+        const size_t copy_len = min((size_t)found_buf_sz, found_len);
+
+        memcpy(found_buf_data, found, copy_len);
+    }
+
+    return found_len;
 }
 
 jint
@@ -659,16 +813,7 @@ Java_com_micron_hse_KvsCursor_seek__JLjava_nio_ByteBuffer_2II_3BII(
      */
     assert(!(*env)->ExceptionCheck(env));
 
-    /* Use the least-most bit to represent whether the key was found or not
-     * because 0-length values are different from non-existent keys.
-     *
-     * To get information out of the packed integer, do the following:
-     *
-     * int packedFoundLen = seek(...);
-     * boolean found = (packedFoundLen & 0b1) == 1;
-     * int foundLen = packedFoundLen >> 1;
-     */
-    return (found_len << 1 | 0x1);
+    return found_len;
 }
 
 jint
@@ -717,16 +862,7 @@ Java_com_micron_hse_KvsCursor_seek__JLjava_nio_ByteBuffer_2IILjava_nio_ByteBuffe
         memcpy(found_buf_data, found, copy_len);
     }
 
-    /* Use the least-most bit to represent whether the key was found or not
-     * because 0-length values are different from non-existent keys.
-     *
-     * To get information out of the packed integer, do the following:
-     *
-     * int packedFoundLen = seek(...);
-     * boolean found = (packedFoundLen & 0b1) == 1;
-     * int foundLen = packedFoundLen >> 1;
-     */
-    return (found_len << 1 | 0x1);
+    return found_len;
 }
 
 jbyteArray
@@ -765,6 +901,62 @@ Java_com_micron_hse_KvsCursor_seekRange__J_3BI_3BII(
         (*env)->ReleaseByteArrayElements(env, filter_min, filter_min_data, JNI_ABORT);
     if (filter_max)
         (*env)->ReleaseByteArrayElements(env, filter_max, filter_max_data, JNI_ABORT);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return NULL;
+    }
+
+    if (!found)
+        return NULL;
+
+    jbyteArray found_key = (*env)->NewByteArray(env, found_len);
+    (*env)->SetByteArrayRegion(env, found_key, 0, found_len, found);
+
+    /* Assert that no ArrayIndexOutOfBoundsException occurred. The byte array is
+     * constructed with a size of found_len, so the previous operation is
+     * infallible in theory.
+     */
+    assert(!(*env)->ExceptionCheck(env));
+
+    return found_key;
+}
+
+jbyteArray
+Java_com_micron_hse_KvsCursor_seekRange__J_3BILjava_lang_String_2I(
+    JNIEnv    *env,
+    jobject    cursor_obj,
+    jlong      cursor_handle,
+    jbyteArray filter_min,
+    jint       filter_min_len,
+    jstring    filter_max,
+    jint       flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    jbyte *filter_min_data =
+        filter_min ? (*env)->GetByteArrayElements(env, filter_min, NULL) : NULL;
+
+    const char *filter_max_data = NULL;
+    jsize       filter_max_len = 0;
+    if (filter_max) {
+        filter_max_data = (*env)->GetStringUTFChars(env, filter_max, NULL);
+        filter_max_len = 0;
+    }
+
+    const void     *found;
+    size_t          found_len;
+    const hse_err_t err = hse_kvs_cursor_seek_range(
+        cursor,
+        flags,
+        filter_min_data,
+        filter_min_len,
+        filter_max_data,
+        filter_max_len,
+        &found,
+        &found_len);
 
     if (err) {
         throw_new_hse_exception(env, err);
@@ -848,6 +1040,191 @@ Java_com_micron_hse_KvsCursor_seekRange__J_3BILjava_nio_ByteBuffer_2III(
 }
 
 jbyteArray
+Java_com_micron_hse_KvsCursor_seekRange__JLjava_lang_String_2_3BII(
+    JNIEnv    *env,
+    jobject    cursor_obj,
+    jlong      cursor_handle,
+    jstring    filter_min,
+    jbyteArray filter_max,
+    jint       filter_max_len,
+    jint       flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    const char *filter_min_data = NULL;
+    jsize       filter_min_len = 0;
+    if (filter_min) {
+        filter_min_data = (*env)->GetStringUTFChars(env, filter_min, NULL);
+        filter_min_len = (*env)->GetStringUTFLength(env, filter_min);
+    }
+
+    jbyte *filter_max_data =
+        filter_max ? (*env)->GetByteArrayElements(env, filter_max, NULL) : NULL;
+
+    const void     *found;
+    size_t          found_len;
+    const hse_err_t err = hse_kvs_cursor_seek_range(
+        cursor,
+        flags,
+        filter_min_data,
+        filter_min_len,
+        filter_max_data,
+        filter_max_len,
+        &found,
+        &found_len);
+
+    if (filter_min)
+        (*env)->ReleaseStringUTFChars(env, filter_min, filter_min_data);
+    if (filter_max)
+        (*env)->ReleaseByteArrayElements(env, filter_max, filter_max_data, JNI_ABORT);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return NULL;
+    }
+
+    if (!found)
+        return NULL;
+
+    jbyteArray found_key = (*env)->NewByteArray(env, found_len);
+    (*env)->SetByteArrayRegion(env, found_key, 0, found_len, found);
+
+    /* Assert that no ArrayIndexOutOfBoundsException occurred. The byte array is
+     * constructed with a size of found_len, so the previous operation is
+     * infallible in theory.
+     */
+    assert(!(*env)->ExceptionCheck(env));
+
+    return found_key;
+}
+
+jbyteArray
+Java_com_micron_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_lang_String_2I(
+    JNIEnv *env,
+    jobject cursor_obj,
+    jlong   cursor_handle,
+    jstring filter_min,
+    jstring filter_max,
+    jint    flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    const char *filter_min_data = NULL;
+    jsize       filter_min_len = 0;
+    if (filter_min) {
+        filter_min_data = (*env)->GetStringUTFChars(env, filter_min, NULL);
+        filter_min_len = (*env)->GetStringUTFLength(env, filter_min);
+    }
+
+    const char *filter_max_data = NULL;
+    jsize       filter_max_len = 0;
+    if (filter_max) {
+        filter_max_data = (*env)->GetStringUTFChars(env, filter_max, NULL);
+        filter_max_len = (*env)->GetStringUTFLength(env, filter_max);
+    }
+
+    const void     *found;
+    size_t          found_len;
+    const hse_err_t err = hse_kvs_cursor_seek_range(
+        cursor,
+        flags,
+        filter_min_data,
+        filter_min_len,
+        filter_max_data,
+        filter_max_len,
+        &found,
+        &found_len);
+
+    if (filter_min)
+        (*env)->ReleaseStringUTFChars(env, filter_min, filter_min_data);
+    if (filter_max)
+        (*env)->ReleaseStringUTFChars(env, filter_max, filter_max_data);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return NULL;
+    }
+
+    if (!found)
+        return NULL;
+
+    jbyteArray found_key = (*env)->NewByteArray(env, found_len);
+    (*env)->SetByteArrayRegion(env, found_key, 0, found_len, found);
+
+    /* Assert that no ArrayIndexOutOfBoundsException occurred. The byte array is
+     * constructed with a size of found_len, so the previous operation is
+     * infallible in theory.
+     */
+    assert(!(*env)->ExceptionCheck(env));
+
+    return found_key;
+}
+
+jbyteArray
+Java_com_micron_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_nio_ByteBuffer_2III(
+    JNIEnv *env,
+    jobject cursor_obj,
+    jlong   cursor_handle,
+    jstring filter_min,
+    jobject filter_max,
+    jint    filter_max_len,
+    jint    filter_max_pos,
+    jint    flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    const char *filter_min_data = NULL;
+    jsize       filter_min_len = 0;
+    if (filter_min) {
+        filter_min_data = (*env)->GetStringUTFChars(env, filter_min, NULL);
+        filter_min_len = (*env)->GetStringUTFLength(env, filter_min);
+    }
+
+    const void *filter_max_data = NULL;
+    if (filter_max) {
+        filter_max_data = (*env)->GetDirectBufferAddress(env, filter_max);
+        filter_max_data = (uint8_t *)filter_max_data + filter_max_pos;
+    }
+
+    const void     *found;
+    size_t          found_len;
+    const hse_err_t err = hse_kvs_cursor_seek_range(
+        cursor,
+        flags,
+        filter_min_data,
+        filter_min_len,
+        filter_max_data,
+        filter_max_len,
+        &found,
+        &found_len);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return NULL;
+    }
+
+    if (!found)
+        return NULL;
+
+    jbyteArray found_key = (*env)->NewByteArray(env, found_len);
+    (*env)->SetByteArrayRegion(env, found_key, 0, found_len, found);
+
+    /* Assert that no ArrayIndexOutOfBoundsException occurred. The byte array is
+     * constructed with a size of found_len, so the previous operation is
+     * infallible in theory.
+     */
+    assert(!(*env)->ExceptionCheck(env));
+
+    return found_key;
+}
+
+jbyteArray
 Java_com_micron_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_3BII(
     JNIEnv    *env,
     jobject    cursor_obj,
@@ -888,6 +1265,68 @@ Java_com_micron_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_3BII(
 
     if (filter_max)
         (*env)->ReleaseByteArrayElements(env, filter_max, filter_max_data, JNI_ABORT);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return NULL;
+    }
+
+    if (!found)
+        return NULL;
+
+    jbyteArray found_key = (*env)->NewByteArray(env, found_len);
+    (*env)->SetByteArrayRegion(env, found_key, 0, found_len, found);
+
+    /* Assert that no ArrayIndexOutOfBoundsException occurred. The byte array is
+     * constructed with a size of found_len, so the previous operation is
+     * infallible in theory.
+     */
+    assert(!(*env)->ExceptionCheck(env));
+
+    return found_key;
+}
+
+jbyteArray
+Java_com_micron_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IILjava_lang_String_2I(
+    JNIEnv *env,
+    jobject cursor_obj,
+    jlong   cursor_handle,
+    jobject filter_min,
+    jint    filter_min_len,
+    jint    filter_min_pos,
+    jstring filter_max,
+    jint    flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    const void *filter_min_data = NULL;
+    if (filter_min) {
+        filter_min_data = (*env)->GetDirectBufferAddress(env, filter_min);
+
+        // Move the start address based on the position
+        filter_min_data = (uint8_t *)filter_min_data + filter_min_pos;
+    }
+
+    const void *filter_max_data = NULL;
+    jsize       filter_max_len = 0;
+    if (filter_max) {
+        filter_max_data = (*env)->GetStringUTFChars(env, filter_max, NULL);
+        filter_max_len = (*env)->GetStringUTFLength(env, filter_max);
+    }
+
+    const void     *found;
+    size_t          found_len;
+    const hse_err_t err = hse_kvs_cursor_seek_range(
+        cursor,
+        flags,
+        filter_min_data,
+        filter_min_len,
+        filter_max_data,
+        filter_max_len,
+        &found,
+        &found_len);
 
     if (err) {
         throw_new_hse_exception(env, err);
@@ -974,7 +1413,7 @@ Java_com_micron_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IILjava_nio_Byte
     return found_key;
 }
 
-jint JNICALL
+jint
 Java_com_micron_hse_KvsCursor_seekRange__J_3BI_3BI_3BII(
     JNIEnv    *env,
     jobject    cursor_obj,
@@ -1029,10 +1468,10 @@ Java_com_micron_hse_KvsCursor_seekRange__J_3BI_3BI_3BII(
      */
     assert(!(*env)->ExceptionCheck(env));
 
-    return (found_len << 1 | 0x1);
+    return found_len;
 }
 
-jint JNICALL
+jint
 Java_com_micron_hse_KvsCursor_seekRange__J_3BI_3BILjava_nio_ByteBuffer_2III(
     JNIEnv    *env,
     jobject    cursor_obj,
@@ -1089,10 +1528,134 @@ Java_com_micron_hse_KvsCursor_seekRange__J_3BI_3BILjava_nio_ByteBuffer_2III(
         memcpy(found_buf_data, found, copy_len);
     }
 
-    return (found_len << 1 | 0x1);
+    return found_len;
 }
 
-jint JNICALL
+jint
+Java_com_micron_hse_KvsCursor_seekRange__J_3BILjava_lang_String_2_3BII(
+    JNIEnv    *env,
+    jobject    cursor_obj,
+    jlong      cursor_handle,
+    jbyteArray filter_min,
+    jint       filter_min_len,
+    jstring    filter_max,
+    jbyteArray found_buf,
+    jint       found_buf_sz,
+    jint       flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    jbyte *filter_min_data =
+        filter_min ? (*env)->GetByteArrayElements(env, filter_min, NULL) : NULL;
+    const char *filter_max_data = NULL;
+    jsize       filter_max_len = 0;
+    if (filter_max) {
+        filter_max_data = (*env)->GetStringUTFChars(env, filter_max, NULL);
+        filter_max_len = (*env)->GetStringUTFLength(env, filter_max);
+    }
+
+    const void     *found;
+    size_t          found_len;
+    const hse_err_t err = hse_kvs_cursor_seek_range(
+        cursor,
+        flags,
+        filter_min_data,
+        filter_min_len,
+        filter_max_data,
+        filter_max_len,
+        &found,
+        &found_len);
+
+    if (filter_min)
+        (*env)->ReleaseByteArrayElements(env, filter_min, filter_min_data, JNI_ABORT);
+    if (filter_max)
+        (*env)->ReleaseStringUTFChars(env, filter_max, filter_max_data);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return 0;
+    }
+
+    if (!found)
+        return 0;
+
+    (*env)->SetByteArrayRegion(env, found_buf, 0, min(found_buf_sz, found_len), found);
+
+    /* Assert that no ArrayIndexOutOfBoundsException occurred. The byte array is
+     * constructed with a size of found_len, so the previous operation is
+     * infallible in theory.
+     */
+    assert(!(*env)->ExceptionCheck(env));
+
+    return found_len;
+}
+
+jint
+Java_com_micron_hse_KvsCursor_seekRange__J_3BILjava_lang_String_2Ljava_nio_ByteBuffer_2III(
+    JNIEnv    *env,
+    jobject    cursor_obj,
+    jlong      cursor_handle,
+    jbyteArray filter_min,
+    jint       filter_min_len,
+    jstring    filter_max,
+    jobject    found_buf,
+    jint       found_buf_sz,
+    jint       found_buf_pos,
+    jint       flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    jbyte *filter_min_data =
+        filter_min ? (*env)->GetByteArrayElements(env, filter_min, NULL) : NULL;
+    const char *filter_max_data = NULL;
+    jsize       filter_max_len = 0;
+    if (filter_max) {
+        filter_max_data = (*env)->GetStringUTFChars(env, filter_max, NULL);
+        filter_max_len = (*env)->GetStringUTFLength(env, filter_max);
+    }
+
+    const void     *found;
+    size_t          found_len;
+    const hse_err_t err = hse_kvs_cursor_seek_range(
+        cursor,
+        flags,
+        filter_min_data,
+        filter_min_len,
+        filter_max_data,
+        filter_max_len,
+        &found,
+        &found_len);
+
+    if (filter_min)
+        (*env)->ReleaseByteArrayElements(env, filter_min, filter_min_data, JNI_ABORT);
+    if (filter_max)
+        (*env)->ReleaseStringUTFChars(env, filter_max, filter_max_data);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return 0;
+    }
+
+    if (!found)
+        return 0;
+
+    if (found_buf) {
+        void *found_buf_data = (*env)->GetDirectBufferAddress(env, found_buf);
+
+        found_buf_data = (uint8_t *)found_buf_data + found_buf_pos;
+        const size_t copy_len = min(found_buf_sz, found_len);
+
+        memcpy(found_buf_data, found, copy_len);
+    }
+
+    return found_len;
+}
+
+jint
 Java_com_micron_hse_KvsCursor_seekRange__J_3BILjava_nio_ByteBuffer_2II_3BII(
     JNIEnv    *env,
     jobject    cursor_obj,
@@ -1152,10 +1715,10 @@ Java_com_micron_hse_KvsCursor_seekRange__J_3BILjava_nio_ByteBuffer_2II_3BII(
      */
     assert(!(*env)->ExceptionCheck(env));
 
-    return (found_len << 1 | 0x1);
+    return found_len;
 }
 
-jint JNICALL
+jint
 Java_com_micron_hse_KvsCursor_seekRange__J_3BILjava_nio_ByteBuffer_2IILjava_nio_ByteBuffer_2III(
     JNIEnv    *env,
     jobject    cursor_obj,
@@ -1217,10 +1780,402 @@ Java_com_micron_hse_KvsCursor_seekRange__J_3BILjava_nio_ByteBuffer_2IILjava_nio_
         memcpy(found_buf_data, found, copy_len);
     }
 
-    return (found_len << 1 | 0x1);
+    return found_len;
 }
 
-jint JNICALL
+jint
+Java_com_micron_hse_KvsCursor_seekRange__JLjava_lang_String_2_3BI_3BII(
+    JNIEnv    *env,
+    jobject    cursor_obj,
+    jlong      cursor_handle,
+    jstring    filter_min,
+    jbyteArray filter_max,
+    jint       filter_max_len,
+    jbyteArray found_buf,
+    jint       found_buf_sz,
+    jint       flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    const char *filter_min_data = NULL;
+    jsize       filter_min_len = 0;
+    if (filter_min) {
+        filter_min_data = (*env)->GetStringUTFChars(env, filter_min, NULL);
+        filter_min_len = (*env)->GetStringUTFLength(env, filter_min);
+    }
+
+    jbyte *filter_max_data =
+        filter_max ? (*env)->GetByteArrayElements(env, filter_max, NULL) : NULL;
+
+    const void     *found;
+    size_t          found_len;
+    const hse_err_t err = hse_kvs_cursor_seek_range(
+        cursor,
+        flags,
+        filter_min_data,
+        filter_min_len,
+        filter_max_data,
+        filter_max_len,
+        &found,
+        &found_len);
+
+    if (filter_min)
+        (*env)->ReleaseStringUTFChars(env, filter_min, NULL);
+    if (filter_max)
+        (*env)->ReleaseByteArrayElements(env, filter_max, filter_max_data, JNI_ABORT);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return 0;
+    }
+
+    if (!found)
+        return 0;
+
+    (*env)->SetByteArrayRegion(env, found_buf, 0, min(found_buf_sz, found_len), found);
+
+    /* Assert that no ArrayIndexOutOfBoundsException occurred. The byte array is
+     * constructed with a size of found_len, so the previous operation is
+     * infallible in theory.
+     */
+    assert(!(*env)->ExceptionCheck(env));
+
+    return found_len;
+}
+
+jint
+Java_com_micron_hse_KvsCursor_seekRange__JLjava_lang_String_2_3BILjava_nio_ByteBuffer_2III(
+    JNIEnv    *env,
+    jobject    cursor_obj,
+    jlong      cursor_handle,
+    jstring    filter_min,
+    jbyteArray filter_max,
+    jint       filter_max_len,
+    jobject    found_buf,
+    jint       found_buf_sz,
+    jint       found_buf_pos,
+    jint       flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    const char *filter_min_data = NULL;
+    jsize       filter_min_len = 0;
+    if (filter_min) {
+        filter_min_data = (*env)->GetStringUTFChars(env, filter_min, NULL);
+        filter_min_len = (*env)->GetStringUTFLength(env, filter_min);
+    }
+
+    jbyte *filter_max_data =
+        filter_max ? (*env)->GetByteArrayElements(env, filter_max, NULL) : NULL;
+
+    const void     *found;
+    size_t          found_len;
+    const hse_err_t err = hse_kvs_cursor_seek_range(
+        cursor,
+        flags,
+        filter_min_data,
+        filter_min_len,
+        filter_max_data,
+        filter_max_len,
+        &found,
+        &found_len);
+
+    if (filter_min)
+        (*env)->ReleaseStringUTFChars(env, filter_min, NULL);
+    if (filter_max)
+        (*env)->ReleaseByteArrayElements(env, filter_max, filter_max_data, JNI_ABORT);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return 0;
+    }
+
+    if (!found)
+        return 0;
+
+    if (found_buf) {
+        void *found_buf_data = (*env)->GetDirectBufferAddress(env, found_buf);
+
+        found_buf_data = (uint8_t *)found_buf_data + found_buf_pos;
+        const size_t copy_len = min((size_t)found_buf_sz, found_len);
+
+        memcpy(found_buf_data, found, copy_len);
+    }
+
+    return found_len;
+}
+
+jint
+Java_com_micron_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_lang_String_2_3BII(
+    JNIEnv    *env,
+    jobject    cursor_obj,
+    jlong      cursor_handle,
+    jstring    filter_min,
+    jstring    filter_max,
+    jbyteArray found_buf,
+    jint       found_buf_sz,
+    jint       flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    const char *filter_min_data = NULL;
+    jsize       filter_min_len = 0;
+    if (filter_min) {
+        filter_min_data = (*env)->GetStringUTFChars(env, filter_min, NULL);
+        filter_min_len = (*env)->GetStringUTFLength(env, filter_min);
+    }
+
+    const char *filter_max_data = NULL;
+    jsize       filter_max_len = 0;
+    if (filter_max) {
+        filter_max_data = (*env)->GetStringUTFChars(env, filter_max, NULL);
+        filter_max_len = (*env)->GetStringUTFLength(env, filter_max);
+    }
+
+    const void     *found;
+    size_t          found_len;
+    const hse_err_t err = hse_kvs_cursor_seek_range(
+        cursor,
+        flags,
+        filter_min_data,
+        filter_min_len,
+        filter_max_data,
+        filter_max_len,
+        &found,
+        &found_len);
+
+    if (filter_min)
+        (*env)->ReleaseStringUTFChars(env, filter_min, NULL);
+    if (filter_max)
+        (*env)->ReleaseStringUTFChars(env, filter_max, NULL);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return 0;
+    }
+
+    if (!found)
+        return 0;
+
+    (*env)->SetByteArrayRegion(env, found_buf, 0, min(found_buf_sz, found_len), found);
+
+    /* Assert that no ArrayIndexOutOfBoundsException occurred. The byte array is
+     * constructed with a size of found_len, so the previous operation is
+     * infallible in theory.
+     */
+    assert(!(*env)->ExceptionCheck(env));
+
+    return found_len;
+}
+
+jint
+Java_com_micron_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_lang_String_2Ljava_nio_ByteBuffer_2III(
+    JNIEnv *env,
+    jobject cursor_obj,
+    jlong   cursor_handle,
+    jstring filter_min,
+    jstring filter_max,
+    jobject found_buf,
+    jint    found_buf_sz,
+    jint    found_buf_pos,
+    jint    flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    const char *filter_min_data = NULL;
+    jsize       filter_min_len = 0;
+    if (filter_min) {
+        filter_min_data = (*env)->GetStringUTFChars(env, filter_min, NULL);
+        filter_min_len = (*env)->GetStringUTFLength(env, filter_min);
+    }
+
+    const char *filter_max_data = NULL;
+    jsize       filter_max_len = 0;
+    if (filter_max) {
+        filter_max_data = (*env)->GetStringUTFChars(env, filter_max, NULL);
+        filter_max_len = (*env)->GetStringUTFLength(env, filter_max);
+    }
+
+    const void     *found;
+    size_t          found_len;
+    const hse_err_t err = hse_kvs_cursor_seek_range(
+        cursor,
+        flags,
+        filter_min_data,
+        filter_min_len,
+        filter_max_data,
+        filter_max_len,
+        &found,
+        &found_len);
+
+    if (filter_min)
+        (*env)->ReleaseStringUTFChars(env, filter_min, NULL);
+    if (filter_max)
+        (*env)->ReleaseStringUTFChars(env, filter_max, NULL);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return 0;
+    }
+
+    if (!found)
+        return 0;
+
+    if (found_buf) {
+        void *found_buf_data = (*env)->GetDirectBufferAddress(env, found_buf);
+
+        found_buf_data = (uint8_t *)found_buf_data + found_buf_pos;
+        const size_t copy_len = min((size_t)found_buf_sz, found_len);
+
+        memcpy(found_buf_data, found, copy_len);
+    }
+
+    return found_len;
+}
+
+jint
+Java_com_micron_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_nio_ByteBuffer_2II_3BII(
+    JNIEnv    *env,
+    jobject    cursor_obj,
+    jlong      cursor_handle,
+    jstring    filter_min,
+    jobject    filter_max,
+    jint       filter_max_len,
+    jint       filter_max_pos,
+    jbyteArray found_buf,
+    jint       found_buf_sz,
+    jint       flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    const char *filter_min_data = NULL;
+    jsize       filter_min_len = 0;
+    if (filter_min) {
+        filter_min_data = (*env)->GetStringUTFChars(env, filter_min, NULL);
+        filter_min_len = (*env)->GetStringUTFLength(env, filter_min);
+    }
+
+    const void *filter_max_data = NULL;
+    if (filter_max) {
+        filter_max_data = (*env)->GetDirectBufferAddress(env, filter_max);
+
+        // Move the start address based on the position
+        filter_max_data = (uint8_t *)filter_max_data + filter_max_pos;
+    }
+
+    const void     *found;
+    size_t          found_len;
+    const hse_err_t err = hse_kvs_cursor_seek_range(
+        cursor,
+        flags,
+        filter_min_data,
+        filter_min_len,
+        filter_max_data,
+        filter_max_len,
+        &found,
+        &found_len);
+
+    if (filter_min)
+        (*env)->ReleaseStringUTFChars(env, filter_min, NULL);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return 0;
+    }
+
+    if (!found)
+        return 0;
+
+    (*env)->SetByteArrayRegion(env, found_buf, 0, min(found_buf_sz, found_len), found);
+
+    /* Assert that no ArrayIndexOutOfBoundsException occurred. The byte array is
+     * constructed with a size of found_len, so the previous operation is
+     * infallible in theory.
+     */
+    assert(!(*env)->ExceptionCheck(env));
+
+    return found_len;
+}
+
+jint
+Java_com_micron_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_nio_ByteBuffer_2IILjava_nio_ByteBuffer_2III(
+    JNIEnv *env,
+    jobject cursor_obj,
+    jlong   cursor_handle,
+    jstring filter_min,
+    jobject filter_max,
+    jint    filter_max_len,
+    jint    filter_max_pos,
+    jobject found_buf,
+    jint    found_buf_sz,
+    jint    found_buf_pos,
+    jint    flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    const char *filter_min_data = NULL;
+    jsize       filter_min_len = 0;
+    if (filter_min) {
+        filter_min_data = (*env)->GetStringUTFChars(env, filter_min, NULL);
+        filter_min_len = (*env)->GetStringUTFLength(env, filter_min);
+    }
+
+    const void *filter_max_data = NULL;
+    if (filter_max) {
+        filter_max_data = (*env)->GetDirectBufferAddress(env, filter_max);
+
+        // Move the start address based on the position
+        filter_max_data = (uint8_t *)filter_max_data + filter_max_pos;
+    }
+
+    const void     *found;
+    size_t          found_len;
+    const hse_err_t err = hse_kvs_cursor_seek_range(
+        cursor,
+        flags,
+        filter_min_data,
+        filter_min_len,
+        filter_max_data,
+        filter_max_len,
+        &found,
+        &found_len);
+
+    if (filter_min)
+        (*env)->ReleaseStringUTFChars(env, filter_min, NULL);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return 0;
+    }
+
+    if (!found)
+        return 0;
+
+    if (found_buf) {
+        void *found_buf_data = (*env)->GetDirectBufferAddress(env, found_buf);
+
+        found_buf_data = (uint8_t *)found_buf_data + found_buf_pos;
+        const size_t copy_len = min((size_t)found_buf_sz, found_len);
+
+        memcpy(found_buf_data, found, copy_len);
+    }
+
+    return found_len;
+}
+
+jint
 Java_com_micron_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_3BI_3BII(
     JNIEnv    *env,
     jobject    cursor_obj,
@@ -1280,10 +2235,10 @@ Java_com_micron_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_3BI_3BII(
      */
     assert(!(*env)->ExceptionCheck(env));
 
-    return (found_len << 1 | 0x1);
+    return found_len;
 }
 
-jint JNICALL
+jint
 Java_com_micron_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_3BILjava_nio_ByteBuffer_2III(
     JNIEnv    *env,
     jobject    cursor_obj,
@@ -1345,10 +2300,144 @@ Java_com_micron_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_3BILjava_nio_
         memcpy(found_buf_data, found, copy_len);
     }
 
-    return (found_len << 1 | 0x1);
+    return found_len;
 }
 
-jint JNICALL
+jint
+Java_com_micron_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IILjava_lang_String_2_3BII(
+    JNIEnv    *env,
+    jobject    cursor_obj,
+    jlong      cursor_handle,
+    jobject    filter_min,
+    jint       filter_min_len,
+    jint       filter_min_pos,
+    jstring    filter_max,
+    jbyteArray found_buf,
+    jint       found_buf_sz,
+    jint       flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    const void *filter_min_data = NULL;
+    if (filter_min) {
+        filter_min_data = (*env)->GetDirectBufferAddress(env, filter_min);
+
+        // Move the start address based on the position
+        filter_min_data = (uint8_t *)filter_min_data + filter_min_pos;
+    }
+
+    const char *filter_max_data = NULL;
+    jsize       filter_max_len = 0;
+    if (filter_max) {
+        filter_max_data = (*env)->GetStringUTFChars(env, filter_max, NULL);
+        filter_max_len = (*env)->GetStringUTFLength(env, filter_max);
+    }
+
+    const void     *found;
+    size_t          found_len;
+    const hse_err_t err = hse_kvs_cursor_seek_range(
+        cursor,
+        flags,
+        filter_min_data,
+        filter_min_len,
+        filter_max_data,
+        filter_max_len,
+        &found,
+        &found_len);
+
+    if (filter_max)
+        (*env)->ReleaseStringUTFChars(env, filter_max, filter_max_data);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return 0;
+    }
+
+    if (!found)
+        return 0;
+
+    (*env)->SetByteArrayRegion(env, found_buf, 0, min(found_buf_sz, found_len), found);
+
+    /* Assert that no ArrayIndexOutOfBoundsException occurred. The byte array is
+     * constructed with a size of found_len, so the previous operation is
+     * infallible in theory.
+     */
+    assert(!(*env)->ExceptionCheck(env));
+
+    return found_len;
+}
+
+jint
+Java_com_micron_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IILjava_lang_String_2Ljava_nio_ByteBuffer_2III(
+    JNIEnv *env,
+    jobject cursor_obj,
+    jlong   cursor_handle,
+    jobject filter_min,
+    jint    filter_min_len,
+    jint    filter_min_pos,
+    jstring filter_max,
+    jobject found_buf,
+    jint    found_buf_sz,
+    jint    found_buf_pos,
+    jint    flags)
+{
+    (void)cursor_obj;
+
+    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
+
+    const void *filter_min_data = NULL;
+    if (filter_min) {
+        filter_min_data = (*env)->GetDirectBufferAddress(env, filter_min);
+
+        // Move the start address based on the position
+        filter_min_data = (uint8_t *)filter_min_data + filter_min_pos;
+    }
+
+    const char *filter_max_data = NULL;
+    jsize       filter_max_len = 0;
+    if (filter_max) {
+        filter_max_data = (*env)->GetStringUTFChars(env, filter_max, NULL);
+        filter_max_len = (*env)->GetStringUTFLength(env, filter_max);
+    }
+
+    const void     *found;
+    size_t          found_len;
+    const hse_err_t err = hse_kvs_cursor_seek_range(
+        cursor,
+        flags,
+        filter_min_data,
+        filter_min_len,
+        filter_max_data,
+        filter_max_len,
+        &found,
+        &found_len);
+
+    if (filter_max)
+        (*env)->ReleaseStringUTFChars(env, filter_max, filter_max_data);
+
+    if (err) {
+        throw_new_hse_exception(env, err);
+        return 0;
+    }
+
+    if (!found)
+        return 0;
+
+    if (found_buf) {
+        void *found_buf_data = (*env)->GetDirectBufferAddress(env, found_buf);
+
+        found_buf_data = (uint8_t *)found_buf_data + found_buf_pos;
+        const size_t copy_len = min((size_t)found_buf_sz, found_len);
+
+        memcpy(found_buf_data, found, copy_len);
+    }
+
+    return found_len;
+}
+
+jint
 Java_com_micron_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IILjava_nio_ByteBuffer_2II_3BII(
     JNIEnv    *env,
     jobject    cursor_obj,
@@ -1411,10 +2500,10 @@ Java_com_micron_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IILjava_nio_Byte
      */
     assert(!(*env)->ExceptionCheck(env));
 
-    return (found_len << 1 | 0x1);
+    return found_len;
 }
 
-jint JNICALL
+jint
 Java_com_micron_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IILjava_nio_ByteBuffer_2IILjava_nio_ByteBuffer_2III(
     JNIEnv *env,
     jobject cursor_obj,
@@ -1479,7 +2568,7 @@ Java_com_micron_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IILjava_nio_Byte
         memcpy(found_buf_data, found, copy_len);
     }
 
-    return (found_len << 1 | 0x1);
+    return found_len;
 }
 
 void
