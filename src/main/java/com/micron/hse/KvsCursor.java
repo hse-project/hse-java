@@ -7,7 +7,6 @@ package com.micron.hse;
 
 import java.io.EOFException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 import java.util.Optional;
 import java.util.AbstractMap.SimpleImmutableEntry;
@@ -30,19 +29,12 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
 
     KvsCursor(final Kvs kvs, final String filter, EnumSet<CreateFlags> flags,
             final KvdbTransaction txn) throws HseException {
-        byte[] filterData = null;
-        int filterLen = 0;
-        if (filter != null) {
-            filterData = filter.getBytes(StandardCharsets.UTF_8);
-            filterLen = filterData.length;
-        }
-
         final long txnHandle = txn == null ? 0 : txn.handle;
         final int flagsValue = flags == null ? 0 : flags.stream()
             .mapToInt(flag -> 1 << flag.ordinal())
             .sum();
 
-        this.handle = create(kvs.handle, filterData, filterLen, flagsValue, txnHandle);
+        this.handle = create(kvs.handle, filter, flagsValue, txnHandle);
     }
 
     KvsCursor(final Kvs kvs, final ByteBuffer filter, EnumSet<CreateFlags> flags,
@@ -68,6 +60,8 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
 
     private static native long create(long kvsHandle, byte[] filter, int filterLen, int flags,
         long txnHandle) throws HseException;
+    private static native long create(long kvsHandle, String filter, int flags, long txnHandle)
+            throws HseException;
     private static native long create(long kvsHandle, ByteBuffer filter, int filterLen,
         int filterPos, int flags, long txnHandle) throws HseException;
     private native void destroy(long cursorHandle) throws HseException;
@@ -86,12 +80,17 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
         int flags) throws HseException;
     private native byte[] seek(long cursorHandle, byte[] key, int keyLen, int flags)
             throws HseException;
+    private native byte[] seek(long cursorHandle, String key, int flags) throws HseException;
     private native byte[] seek(long cursorHandle, ByteBuffer key, int keyLen, int keyPos, int flags)
             throws HseException;
     private native int seek(long cursorHandle, byte[] key, int keyLen, byte[] foundBuf,
         int foundBufSz, int flags) throws HseException;
     private native int seek(long cursorHandle, byte[] key, int keyLen, ByteBuffer foundBuf,
         int foundBufSz, int foundBufPos, int flags) throws HseException;
+    private native int seek(long cursorHandle, String key, byte[] foundBuf, int foundBufSz,
+        int flags) throws HseException;
+    private native int seek(long cursorHandle, String key, ByteBuffer foundBuf, int foundBufSz,
+        int foundBufPos, int flags) throws HseException;
     private native int seek(long cursorHandle, ByteBuffer key, int keyLen, int keyPos,
         byte[] foundBuf, int foundBufSz, int flags) throws HseException;
     private native int seek(long cursorHandle, ByteBuffer key, int keyLen, int keyPos,
@@ -100,9 +99,19 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     private native byte[] seekRange(long cursorHandle, byte[] filterMin, int filterMinLen,
         byte[] filterMax, int filterMaxLen, int flags) throws HseException;
     private native byte[] seekRange(long cursorHandle, byte[] filterMin, int filterMinLen,
+        String filterMax, int flags) throws HseException;
+    private native byte[] seekRange(long cursorHandle, byte[] filterMin, int filterMinLen,
         ByteBuffer filterMax, int filterMaxLen, int filterMaxPos, int flags) throws HseException;
+    private native byte[] seekRange(long cursorHandle, String filterMin, byte[] filterMax,
+        int filterMaxLen, int flags) throws HseException;
+    private native byte[] seekRange(long cursorHandle, String filterMin, String filterMax,
+        int flags) throws HseException;
+    private native byte[] seekRange(long cursorHandle, String filterMin, ByteBuffer filterMax,
+        int filterMaxLen, int filterMaxPos, int flags) throws HseException;
     private native byte[] seekRange(long cursorHandle, ByteBuffer filterMin, int filterMinLen,
         int filterMinPos, byte[] filterMax, int filterMaxLen, int flags) throws HseException;
+    private native byte[] seekRange(long cursorHandle, ByteBuffer filterMin, int filterMinLen,
+        int filterMinPos, String filterMax, int flags) throws HseException;
     private native byte[] seekRange(long cursorHandle, ByteBuffer filterMin, int filterMinLen,
         int filterMinPos, ByteBuffer filterMax, int filterMaxLen, int filterMaxPos, int flags)
             throws HseException;
@@ -113,17 +122,43 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
         byte[] filterMax, int filterMaxLen, ByteBuffer foundBuf, int foundBufSz, int foundBufPos,
         int flags) throws HseException;
     private native int seekRange(long cursorHandle, byte[] filterMin, int filterMinLen,
+        String filterMax, byte[] foundBuf, int foundBufSz, int flags) throws HseException;
+    private native int seekRange(long cursorHandle, byte[] filterMin, int filterMinLen,
+        String filterMax, ByteBuffer foundBuf, int foundBufSz, int foundBufPos, int flags)
+            throws HseException;
+    private native int seekRange(long cursorHandle, byte[] filterMin, int filterMinLen,
         ByteBuffer filterMax, int filterMaxLen, int filterMaxPos, byte[] foundBuf, int foundBufSz,
         int flags) throws HseException;
     private native int seekRange(long cursorHandle, byte[] filterMin, int filterMinLen,
         ByteBuffer filterMax, int filterMaxLen, int filterMaxPos, ByteBuffer foundBuf,
         int foundBufSz, int foundBufPos, int flags) throws HseException;
+    private native int seekRange(long cursorHandle, String filterMin, byte[] filterMax,
+        int filterMaxLen, byte[] foundBuf, int foundBufSz, int flags) throws HseException;
+    private native int seekRange(long cursorHandle, String filterMin, byte[] filterMax,
+        int filterMaxLen, ByteBuffer foundBuf, int foundBufSz, int foundBufPos, int flags)
+            throws HseException;
+    private native int seekRange(long cursorHandle, String filterMin, String filterMax,
+        byte[] foundBuf, int foundBufSz, int flags) throws HseException;
+    private native int seekRange(long cursorHandle, String filterMin, String filterMax,
+        ByteBuffer foundBuf, int foundBufSz, int foundBufPos, int flags) throws HseException;
+    private native int seekRange(long cursorHandle, String filterMin, ByteBuffer filterMax,
+        int filterMaxLen, int filterMaxPos, byte[] foundBuf, int foundBufSz, int flags)
+            throws HseException;
+    private native int seekRange(long cursorHandle, String filterMin, ByteBuffer filterMax,
+        int filterMaxLen, int filterMaxPos, ByteBuffer foundBuf, int foundBufSz, int foundBufPos,
+        int flags) throws HseException;
     private native int seekRange(long cursorHandle, ByteBuffer filterMin, int filterMinLen,
         int filterMinPos, byte[] filterMax, int filterMaxLen, byte[] foundBuf, int foundBufSz,
         int flags) throws HseException;
     private native int seekRange(long cursorHandle, ByteBuffer filterMin, int filterMinLen,
         int filterMinPos, byte[] filterMax, int filterMaxLen, ByteBuffer foundBuf, int foundBufSz,
         int foundBufPos, int flags) throws HseException;
+    private native int seekRange(long cursorHandle, ByteBuffer filterMin, int filterMinLen,
+        int filterMinPos, String filterMax, byte[] foundBuf, int foundBufSz, int flags)
+            throws HseException;
+    private native int seekRange(long cursorHandle, ByteBuffer filterMin, int filterMinLen,
+        int filterMinPos, String filterMax, ByteBuffer foundBuf, int foundBufSz, int foundBufPos,
+        int flags) throws HseException;
     private native int seekRange(long cursorHandle, ByteBuffer filterMin, int filterMinLen,
         int filterMinPos, ByteBuffer filterMax, int filterMaxLen, int filterMaxPos, byte[] foundBuf,
         int foundBufSz, int flags) throws HseException;
@@ -138,7 +173,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Key-value pair.
      * @throws EOFException Cursor has no more elements to read.
      * @throws HseException Underlying C function returned a non-zero value
-     * @see #read(byte[], byte[])
      */
     public SimpleImmutableEntry<byte[], byte[]> read()
             throws EOFException, HseException {
@@ -186,7 +220,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Key and value lengths.
      * @throws EOFException Cursor has no more elements to read.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #read(byte[], byte[])
      */
     public SimpleImmutableEntry<Integer, Integer> read(final byte[] keyBuf,
             final ByteBuffer valueBuf) throws EOFException, HseException {
@@ -228,12 +261,11 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Key and value lengths.
      * @throws EOFException Cursor has no more elements to read.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #read(byte[], byte[])
      */
     public SimpleImmutableEntry<Integer, Integer> read(final ByteBuffer keyBuf,
             final byte[] valueBuf) throws EOFException, HseException {
-        int keyBufPos = 0;
         int keyBufSz = 0;
+        int keyBufPos = 0;
         if (keyBuf != null) {
             assert keyBuf.isDirect();
 
@@ -273,7 +305,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws EOFException Cursor has no more elements to read.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #read(byte[], byte[])
      */
     public SimpleImmutableEntry<Integer, Integer> read(final ByteBuffer keyBuf,
             final ByteBuffer valueBuf) throws EOFException, HseException {
@@ -282,17 +313,17 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
         if (keyBuf != null) {
             assert keyBuf.isDirect();
 
-            keyBufPos = keyBuf.position();
             keyBufSz = keyBuf.remaining();
+            keyBufPos = keyBuf.position();
         }
 
-        int valueBufPos = 0;
         int valueBufSz = 0;
+        int valueBufPos = 0;
         if (valueBuf != null) {
             assert valueBuf.isDirect();
 
-            valueBufPos = valueBuf.position();
             valueBufSz = valueBuf.remaining();
+            valueBufPos = valueBuf.position();
         }
 
         final SimpleImmutableEntry<Integer, Integer> entry = read(this.handle,
@@ -315,7 +346,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @param key Key to find.
      * @return Next key in sequence.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seek(byte[], byte[])
      */
     public Optional<byte[]> seek(final byte[] key) throws HseException {
         final int keyLen = key == null ? 0 : key.length;
@@ -326,17 +356,14 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seek(byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * @param key Key to find.
      * @return Next key in sequence.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seek(byte[])
      */
     public Optional<byte[]> seek(final String key) throws HseException {
-        final byte[] keyData = key == null ? null : key.getBytes(StandardCharsets.UTF_8);
-
-        return seek(keyData);
+        return Optional.ofNullable(seek(this.handle, key, 0));
     }
 
     /**
@@ -353,7 +380,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Next key in sequence.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seek(byte[])
      */
     public Optional<byte[]> seek(final ByteBuffer key)
             throws HseException {
@@ -386,16 +412,15 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      */
     public Optional<Integer> seek(final byte[] key, final byte[] foundBuf) throws HseException {
         final int keyLen = key == null ? 0 : key.length;
-        final int foundBufSz = foundBuf == null ? 0 : key.length;
+        final int foundBufSz = foundBuf == null ? 0 : foundBuf.length;
 
-        final int packedFoundLen = seek(this.handle, key, keyLen, foundBuf, foundBufSz, 0);
-        final boolean found = (packedFoundLen & 0b1) == 1;
+        final int foundLen = seek(this.handle, key, keyLen, foundBuf, foundBufSz, 0);
 
-        if (!found) {
+        if (foundLen == 0) {
             return Optional.empty();
         }
 
-        return Optional.of(packedFoundLen >> 1);
+        return Optional.of(foundLen);
     }
 
     /**
@@ -415,7 +440,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seek(byte[], byte[])
      */
     public Optional<Integer> seek(final byte[] key, final ByteBuffer foundBuf)
             throws HseException {
@@ -430,15 +454,11 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
             foundBufPos = foundBuf.position();
         }
 
-        final int packedFoundLen = seek(this.handle, key, keyLen, foundBuf, foundBufSz, foundBufPos,
-            0);
-        final boolean found = (packedFoundLen & 0b1) == 1;
+        final int foundLen = seek(this.handle, key, keyLen, foundBuf, foundBufSz, foundBufPos, 0);
 
-        if (!found) {
+        if (foundLen == 0) {
             return Optional.empty();
         }
-
-        final int foundLen = packedFoundLen >> 1;
 
         if (foundBuf != null) {
             foundBuf.limit(Math.min(foundBuf.limit(), foundBufPos + foundLen));
@@ -450,24 +470,29 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seek(byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * @param key Key to find.
      * @param foundBuf Next key in sequence.
      * @return Length of the found key.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seek(byte[], byte[])
      */
     public Optional<Integer> seek(final String key, final byte[] foundBuf) throws HseException {
-        final byte[] keyData = key == null ? null : key.getBytes(StandardCharsets.UTF_8);
+        final int foundBufSz = foundBuf == null ? 0 : foundBuf.length;
 
-        return seek(keyData, foundBuf);
+        final int foundLen = seek(this.handle, key, foundBuf, foundBufSz, 0);
+
+        if (foundLen == 0) {
+            return Optional.empty();
+        }
+
+        return Optional.of(foundLen);
     }
 
     /**
      * Refer to {@link #seek(byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * @param key Key to find.
      * @param foundBuf Next key in sequence. {@link ByteBuffer#limit(int)} will
@@ -476,13 +501,29 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seek(byte[], ByteBuffer)
      */
     public Optional<Integer> seek(final String key, final ByteBuffer foundBuf)
             throws HseException {
-        final byte[] keyData = key == null ? null : key.getBytes(StandardCharsets.UTF_8);
+        int foundBufSz = 0;
+        int foundBufPos = 0;
+        if (foundBuf != null) {
+            assert foundBuf.isDirect();
 
-        return seek(keyData, foundBuf);
+            foundBufSz = foundBuf.remaining();
+            foundBufPos = foundBuf.position();
+        }
+
+        final int foundLen = seek(this.handle, key, foundBuf, foundBufSz, foundBufPos, 0);
+
+        if (foundLen == 0) {
+            return Optional.empty();
+        }
+
+        if (foundBuf != null) {
+            foundBuf.limit(Math.min(foundBuf.limit(), foundBufPos + foundLen));
+        }
+
+        return Optional.of(foundLen);
     }
 
     /**
@@ -500,7 +541,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seek(byte[], byte[])
      */
     public Optional<Integer> seek(final ByteBuffer key, final byte[] foundBuf)
             throws HseException {
@@ -517,21 +557,19 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
 
         final int foundBufSz = foundBuf == null ? 0 : foundBuf.length;
 
-        final int packedFoundLen = seek(this.handle, key, keyLen, keyPos, foundBuf, foundBufSz,
-            0);
-        final boolean found = (packedFoundLen & 0b1) == 1;
+        final int foundLen = seek(this.handle, key, keyLen, keyPos, foundBuf, foundBufSz, 0);
 
-        if (!found) {
+        if (foundLen == 0) {
             return Optional.empty();
         }
 
-        return Optional.of(packedFoundLen >> 1);
+        return Optional.of(foundLen);
     }
 
     /**
      * Refer to {@link #seek(byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * <p>Any {@link ByteBuffer} arguments must be direct.</p>
      *
@@ -547,7 +585,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seek(byte[], byte[])
      */
     public Optional<Integer> seek(final ByteBuffer key, final ByteBuffer foundBuf)
             throws HseException {
@@ -558,6 +595,8 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
 
             keyLen = key.remaining();
             keyPos = key.position();
+
+            key.position(key.limit());
         }
 
         int foundBufSz = 0;
@@ -569,15 +608,12 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
             foundBufPos = foundBuf.position();
         }
 
-        final int packedFoundLen = seek(this.handle, key, keyLen, keyPos, foundBuf, foundBufSz,
+        final int foundLen = seek(this.handle, key, keyLen, keyPos, foundBuf, foundBufSz,
             foundBufPos, 0);
-        final boolean found = (packedFoundLen & 0b1) == 1;
 
-        if (!found) {
+        if (foundLen == 0) {
             return Optional.empty();
         }
-
-        final int foundLen = packedFoundLen >> 1;
 
         if (foundBuf != null) {
             foundBuf.limit(Math.min(foundBuf.limit(), foundBufPos + foundLen));
@@ -593,7 +629,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @param filterMax Filter maximum.
      * @return Next key in sequence.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[], byte[])
      */
     public Optional<byte[]> seekRange(final byte[] filterMin, final byte[] filterMax)
             throws HseException {
@@ -607,20 +642,18 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
      * @return Next key in sequence.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[])
      */
     public Optional<byte[]> seekRange(final byte[] filterMin, final String filterMax)
             throws HseException {
-        final byte[] filterMaxData = filterMax == null
-            ? null : filterMax.getBytes(StandardCharsets.UTF_8);
+        final int filterMinLen = filterMin == null ? 0 : filterMin.length;
 
-        return seekRange(filterMin, filterMaxData);
+        return Optional.ofNullable(seekRange(this.handle, filterMin, filterMinLen, filterMax, 0));
     }
 
     /**
@@ -638,7 +671,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Next key in sequence.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[])
      */
     public Optional<byte[]> seekRange(final byte[] filterMin, final ByteBuffer filterMax)
             throws HseException {
@@ -662,61 +694,61 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
      * @return Next key in sequence.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[])
      */
     public Optional<byte[]> seekRange(final String filterMin, final byte[] filterMax)
             throws HseException {
-        final byte[] filterMinData = filterMin == null
-            ? null : filterMin.getBytes(StandardCharsets.UTF_8);
+        final int filterMaxLen = filterMax == null ? 0 : filterMax.length;
 
-        return seekRange(filterMinData, filterMax);
+        return Optional.ofNullable(seekRange(this.handle, filterMin, filterMax, filterMaxLen, 0));
     }
 
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
      * @return Next key in sequence.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[])
      */
     public Optional<byte[]> seekRange(final String filterMin, final String filterMax)
             throws HseException {
-        final byte[] filterMinData = filterMin == null
-            ? null : filterMin.getBytes(StandardCharsets.UTF_8);
-        final byte[] filterMaxData = filterMax == null
-            ? null : filterMax.getBytes(StandardCharsets.UTF_8);
-
-        return seekRange(filterMinData, filterMaxData);
+        return Optional.ofNullable(seekRange(this.handle, filterMin, filterMax, 0));
     }
 
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
      * @return Next key in sequence.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[])
      */
     public Optional<byte[]> seekRange(final String filterMin, final ByteBuffer filterMax)
             throws HseException {
-        final byte[] filterMinData = filterMin == null
-            ? null : filterMin.getBytes(StandardCharsets.UTF_8);
+        int filterMaxLen = 0;
+        int filterMaxPos = 0;
+        if (filterMax != null) {
+            assert filterMax.isDirect();
 
-        return seekRange(filterMinData, filterMax);
+            filterMaxLen = filterMax.remaining();
+            filterMaxPos = filterMax.position();
+
+            filterMax.position(filterMax.limit());
+        }
+
+        return Optional.ofNullable(seekRange(this.handle, filterMin, filterMax, filterMaxLen,
+            filterMaxPos, 0));
     }
 
     /**
@@ -734,7 +766,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Next key in sequence.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[])
      */
     public Optional<byte[]> seekRange(final ByteBuffer filterMin, final byte[] filterMax)
             throws HseException {
@@ -743,8 +774,10 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
         if (filterMin != null) {
             assert filterMin.isDirect();
 
-            filterMinLen = filterMin.limit();
+            filterMinLen = filterMin.remaining();
             filterMinPos = filterMin.position();
+
+            filterMin.position(filterMin.limit());
         }
 
         final int filterMaxLen = filterMax == null ? 0 : filterMax.length;
@@ -756,21 +789,29 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
      * @return Next key in sequence.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[])
      */
     public Optional<byte[]> seekRange(final ByteBuffer filterMin, final String filterMax)
             throws HseException {
-        final byte[] filterMaxData = filterMax == null
-            ? null : filterMax.getBytes(StandardCharsets.UTF_8);
+        int filterMinLen = 0;
+        int filterMinPos = 0;
+        if (filterMin != null) {
+            assert filterMin.isDirect();
 
-        return seekRange(filterMin, filterMaxData);
+            filterMinLen = filterMin.remaining();
+            filterMinPos = filterMin.position();
+
+            filterMin.position(filterMin.limit());
+        }
+
+        return Optional.ofNullable(seekRange(this.handle, filterMin, filterMinLen, filterMinPos,
+            filterMax, 0));
     }
 
     /**
@@ -788,7 +829,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Next key in sequence.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[])
      */
     public Optional<byte[]> seekRange(final ByteBuffer filterMin, final ByteBuffer filterMax)
             throws HseException {
@@ -845,15 +885,14 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
         final int filterMaxLen = filterMax == null ? 0 : filterMax.length;
         final int foundBufSz = foundBuf == null ? 0 : foundBuf.length;
 
-        final int packedFoundLen = seekRange(this.handle, filterMin, filterMinLen, filterMax,
+        final int foundLen = seekRange(this.handle, filterMin, filterMinLen, filterMax,
             filterMaxLen, foundBuf, foundBufSz, 0);
-        final boolean found = (packedFoundLen & 0b1) == 1;
 
-        if (!found) {
+        if (foundLen == 0) {
             return Optional.empty();
         }
 
-        return Optional.of(packedFoundLen >> 1);
+        return Optional.of(foundLen);
     }
 
     /**
@@ -874,7 +913,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[], byte[])
      */
     public Optional<Integer> seekRange(final byte[] filterMin, final byte[] filterMax,
             final ByteBuffer foundBuf) throws HseException {
@@ -890,15 +928,12 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
             foundBufPos = foundBuf.position();
         }
 
-        final int packedFoundLen = seekRange(this.handle, filterMin, filterMinLen, filterMax,
+        final int foundLen = seekRange(this.handle, filterMin, filterMinLen, filterMax,
             filterMaxLen, foundBuf, foundBufSz, foundBufPos, 0);
-        final boolean found = (packedFoundLen & 0b1) == 1;
 
-        if (!found) {
+        if (foundLen == 0) {
             return Optional.empty();
         }
-
-        final int foundLen = packedFoundLen >> 1;
 
         if (foundBuf != null) {
             foundBuf.limit(Math.min(foundBuf.limit(), foundBufPos + foundLen));
@@ -910,27 +945,33 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
      * @param foundBuf Next key in sequence.
      * @return Length of the found key.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[], byte[])
      */
     public Optional<Integer> seekRange(final byte[] filterMin, final String filterMax,
             final byte[] foundBuf) throws HseException {
-        final byte[] filterMaxData = filterMax == null
-            ? null : filterMax.getBytes(StandardCharsets.UTF_8);
+        final int filterMinLen = filterMin == null ? 0 : filterMin.length;
+        final int foundBufSz = foundBuf == null ? 0 : foundBuf.length;
 
-        return seekRange(filterMin, filterMaxData, foundBuf);
+        final int foundLen = seekRange(this.handle, filterMin, filterMinLen, filterMax, foundBuf,
+            foundBufSz, 0);
+
+        if (foundLen == 0) {
+            return Optional.empty();
+        }
+
+        return Optional.of(foundLen);
     }
 
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
@@ -940,14 +981,32 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[], byte[])
      */
     public Optional<Integer> seekRange(final byte[] filterMin, final String filterMax,
             final ByteBuffer foundBuf) throws HseException {
-        final byte[] filterMaxData = filterMax == null
-            ? null : filterMax.getBytes(StandardCharsets.UTF_8);
+        final int filterMinLen = filterMin == null ? 0 : filterMin.length;
 
-        return seekRange(filterMin, filterMaxData, foundBuf);
+        int foundBufSz = 0;
+        int foundBufPos = 0;
+        if (foundBuf != null) {
+            assert foundBuf.isDirect();
+
+            foundBufSz = foundBuf.remaining();
+            foundBufPos = foundBuf.position();
+        }
+
+        final int foundLen = seekRange(this.handle, filterMin, filterMinLen, filterMax,
+            foundBuf, foundBufSz, foundBufPos, 0);
+
+        if (foundLen == 0) {
+            return Optional.empty();
+        }
+
+        if (foundBuf != null) {
+            foundBuf.limit(Math.min(foundBuf.limit(), foundBufPos + foundLen));
+        }
+
+        return Optional.of(foundLen);
     }
 
     /**
@@ -966,7 +1025,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[], byte[])
      */
     public Optional<Integer> seekRange(final byte[] filterMin, final ByteBuffer filterMax,
             final byte[] foundBuf) throws HseException {
@@ -985,15 +1043,14 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
 
         final int foundBufSz = foundBuf == null ? 0 : foundBuf.length;
 
-        final int packedFoundLen = seekRange(this.handle, filterMin, filterMinLen, filterMax,
+        final int foundLen = seekRange(this.handle, filterMin, filterMinLen, filterMax,
             filterMaxLen, filterMaxPos, foundBuf, foundBufSz, 0);
-        final boolean found = (packedFoundLen & 0b1) == 1;
 
-        if (!found) {
+        if (foundLen == 0) {
             return Optional.empty();
         }
 
-        return Optional.of(packedFoundLen >> 1);
+        return Optional.of(foundLen);
     }
 
     /**
@@ -1014,7 +1071,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[], byte[])
      */
     public Optional<Integer> seekRange(final byte[] filterMin, final ByteBuffer filterMax,
             final ByteBuffer foundBuf) throws HseException {
@@ -1027,6 +1083,8 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
 
             filterMaxLen = filterMax.remaining();
             filterMaxPos = filterMax.position();
+
+            filterMax.position(filterMax.limit());
         }
 
         int foundBufSz = 0;
@@ -1038,15 +1096,12 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
             foundBufPos = foundBuf.position();
         }
 
-        final int packedFoundLen = seekRange(this.handle, filterMin, filterMinLen, filterMax,
+        final int foundLen = seekRange(this.handle, filterMin, filterMinLen, filterMax,
             filterMaxLen, filterMaxPos, foundBuf, foundBufSz, foundBufPos, 0);
-        final boolean found = (packedFoundLen & 0b1) == 1;
 
-        if (!found) {
+        if (foundLen == 0) {
             return Optional.empty();
         }
-
-        final int foundLen = packedFoundLen >> 1;
 
         if (foundBuf != null) {
             foundBuf.limit(Math.min(foundBuf.limit(), foundBufPos + foundLen));
@@ -1058,27 +1113,33 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
      * @param foundBuf Next key in sequence.
      * @return Length of the found key.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[], byte[])
      */
     public Optional<Integer> seekRange(final String filterMin, final byte[] filterMax,
             final byte[] foundBuf) throws HseException {
-        final byte[] filterMinData = filterMin == null
-            ? null : filterMin.getBytes(StandardCharsets.UTF_8);
+        final int filterMaxLen = filterMax == null ? 0 : filterMax.length;
+        final int foundBufSz = foundBuf == null ? 0 : foundBuf.length;
 
-        return seekRange(filterMinData, filterMax, foundBuf);
+        final int foundLen = seekRange(this.handle, filterMin, filterMax, filterMaxLen,
+            foundBuf, foundBufSz, 0);
+
+        if (foundLen == 0) {
+            return Optional.empty();
+        }
+
+        return Optional.of(foundLen);
     }
 
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
@@ -1088,42 +1149,62 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[], ByteBuffer)
      */
     public Optional<Integer> seekRange(final String filterMin, final byte[] filterMax,
             final ByteBuffer foundBuf) throws HseException {
-        final byte[] filterMinData = filterMin == null
-            ? null : filterMin.getBytes(StandardCharsets.UTF_8);
+        final int filterMaxLen = filterMax == null ? 0 : filterMax.length;
 
-        return seekRange(filterMinData, filterMax, foundBuf);
+        int foundBufSz = 0;
+        int foundBufPos = 0;
+        if (foundBuf != null) {
+            assert foundBuf.isDirect();
+
+            foundBufSz = foundBuf.remaining();
+            foundBufPos = foundBuf.position();
+        }
+
+        final int foundLen = seekRange(this.handle, filterMin, filterMax, filterMaxLen,
+            foundBuf, foundBufSz, foundBufPos, 0);
+
+        if (foundLen == 0) {
+            return Optional.empty();
+        }
+
+        if (foundBuf != null) {
+            foundBuf.limit(Math.min(foundBuf.limit(), foundBufPos + foundLen));
+        }
+
+        return Optional.of(foundLen);
     }
 
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
      * @param foundBuf Next key in sequence.
      * @return Length of the found key.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[], byte[])
      */
     public Optional<Integer> seekRange(final String filterMin, final String filterMax,
             final byte[] foundBuf) throws HseException {
-        final byte[] filterMinData = filterMin == null
-            ? null : filterMin.getBytes(StandardCharsets.UTF_8);
-        final byte[] filterMaxData = filterMax == null
-            ? null : filterMax.getBytes(StandardCharsets.UTF_8);
+        final int foundBufSz = foundBuf == null ? 0 : foundBuf.length;
 
-        return seekRange(filterMinData, filterMaxData, foundBuf);
+        final int foundLen = seekRange(this.handle, filterMin, filterMax, foundBuf, foundBufSz, 0);
+
+        if (foundLen == 0) {
+            return Optional.empty();
+        }
+
+        return Optional.of(foundLen);
     }
 
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
@@ -1133,20 +1214,36 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[], ByteBuffer)
      */
     public Optional<Integer> seekRange(final String filterMin, final String filterMax,
             final ByteBuffer foundBuf) throws HseException {
-        final byte[] filterMinData = filterMin == null
-            ? null : filterMin.getBytes(StandardCharsets.UTF_8);
+        int foundBufSz = 0;
+        int foundBufPos = 0;
+        if (foundBuf != null) {
+            assert foundBuf.isDirect();
 
-        return seekRange(filterMinData, filterMax, foundBuf);
+            foundBufSz = foundBuf.remaining();
+            foundBufPos = foundBuf.position();
+        }
+
+        final int foundLen = seekRange(this.handle, filterMin, filterMax, foundBuf,
+            foundBufSz, foundBufPos, 0);
+
+        if (foundLen == 0) {
+            return Optional.empty();
+        }
+
+        if (foundBuf != null) {
+            foundBuf.limit(Math.min(foundBuf.limit(), foundBufPos + foundLen));
+        }
+
+        return Optional.of(foundLen);
     }
 
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
@@ -1154,20 +1251,36 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], ByteBuffer, byte[])
      */
     public Optional<Integer> seekRange(final String filterMin, final ByteBuffer filterMax,
             final byte[] foundBuf) throws HseException {
-        final byte[] filterMinData = filterMin == null
-            ? null : filterMin.getBytes(StandardCharsets.UTF_8);
+        int filterMaxLen = 0;
+        int filterMaxPos = 0;
+        if (filterMax != null) {
+            assert filterMax.isDirect();
 
-        return seekRange(filterMinData, filterMax, foundBuf);
+            filterMaxLen = filterMax.remaining();
+            filterMaxPos = filterMax.position();
+
+            filterMax.position(filterMax.limit());
+        }
+
+        final int foundBufSz = foundBuf == null ? 0 : foundBuf.length;
+
+        final int foundLen = seekRange(this.handle, filterMin, filterMax, filterMaxLen,
+            filterMaxPos, foundBuf, foundBufSz, 0);
+
+        if (foundLen == 0) {
+            return Optional.empty();
+        }
+
+        return Optional.of(foundLen);
     }
 
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
@@ -1177,14 +1290,41 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], ByteBuffer, ByteBuffer)
      */
     public Optional<Integer> seekRange(final String filterMin, final ByteBuffer filterMax,
             final ByteBuffer foundBuf) throws HseException {
-        final byte[] filterMinData = filterMin == null
-            ? null : filterMin.getBytes(StandardCharsets.UTF_8);
+        int filterMaxLen = 0;
+        int filterMaxPos = 0;
+        if (filterMax != null) {
+            assert filterMax.isDirect();
 
-        return seekRange(filterMinData, filterMax, foundBuf);
+            filterMaxLen = filterMax.remaining();
+            filterMaxPos = filterMax.position();
+
+            filterMax.position(filterMax.limit());
+        }
+
+        int foundBufSz = 0;
+        int foundBufPos = 0;
+        if (foundBuf != null) {
+            assert foundBuf.isDirect();
+
+            foundBufSz = foundBuf.remaining();
+            foundBufPos = foundBuf.position();
+        }
+
+        final int foundLen = seekRange(this.handle, filterMin, filterMax, filterMaxLen,
+            filterMaxPos, foundBuf, foundBufSz, foundBufPos, 0);
+
+        if (foundLen == 0) {
+            return Optional.empty();
+        }
+
+        if (foundBuf != null) {
+            foundBuf.limit(Math.min(foundBuf.limit(), foundBufPos + foundLen));
+        }
+
+        return Optional.of(foundLen);
     }
 
     /**
@@ -1203,7 +1343,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[], byte[])
      */
     public Optional<Integer> seekRange(final ByteBuffer filterMin, final byte[] filterMax,
             final byte[] foundBuf) throws HseException {
@@ -1221,91 +1360,14 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
         final int filterMaxLen = filterMax == null ? 0 : filterMax.length;
         final int foundBufSz = foundBuf == null ? 0 : foundBuf.length;
 
-        final int packedFoundLen = seekRange(this.handle, filterMin, filterMinLen, filterMinPos,
+        final int foundLen = seekRange(this.handle, filterMin, filterMinLen, filterMinPos,
             filterMax, filterMaxLen, foundBuf, foundBufSz, 0);
-        final boolean found = (packedFoundLen & 0b1) == 1;
 
-        if (!found) {
+        if (foundLen == 0) {
             return Optional.empty();
         }
 
-        return Optional.of(packedFoundLen >> 1);
-    }
-
-    /**
-     * Refer to {@link #seekRange(byte[], byte[], byte[])}.
-     *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
-     *
-     * @param filterMin Filter minimum.
-     * @param filterMax Filter maximum.
-     * @param foundBuf Next key in sequence.
-     * @return Length of the found key.
-     * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
-     * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(ByteBuffer, byte[], byte[])
-     */
-    public Optional<Integer> seekRange(final ByteBuffer filterMin, final String filterMax,
-            final byte[] foundBuf) throws HseException {
-        final byte[] filterMaxData = filterMax == null
-            ? null : filterMax.getBytes(StandardCharsets.UTF_8);
-
-        return seekRange(filterMin, filterMaxData, foundBuf);
-    }
-
-    /**
-     * Refer to {@link #seekRange(byte[], byte[], byte[])}.
-     *
-     * <p>Any {@link ByteBuffer} arguments must be direct.</p>
-     *
-     * <p>
-     * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
-     * </p>
-     *
-     * @param filterMin Filter minimum.
-     * @param filterMax Filter maximum.
-     * @param foundBuf Next key in sequence.
-     * @return Length of the found key.
-     * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
-     * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[], byte[])
-     */
-    public Optional<Integer> seekRange(final ByteBuffer filterMin, final ByteBuffer filterMax,
-            final byte[] foundBuf) throws HseException {
-        int filterMinLen = 0;
-        int filterMinPos = 0;
-        if (filterMin != null) {
-            assert filterMin.isDirect();
-
-            filterMinLen = filterMin.remaining();
-            filterMinPos = filterMin.position();
-
-            filterMax.position(filterMax.limit());
-        }
-
-        int filterMaxLen = 0;
-        int filterMaxPos = 0;
-        if (filterMax != null) {
-            assert filterMax.isDirect();
-
-            filterMaxLen = filterMax.remaining();
-            filterMaxPos = filterMax.position();
-
-            filterMax.position(filterMax.limit());
-        }
-
-        final int foundBufSz = foundBuf == null ? 0 : foundBuf.length;
-
-        final int packedFoundLen = seekRange(this.handle, filterMin, filterMinLen, filterMinPos,
-            filterMax, filterMaxLen, filterMaxPos, foundBuf, foundBufSz, 0);
-        final boolean found = (packedFoundLen & 0b1) == 1;
-
-        if (!found) {
-            return Optional.empty();
-        }
-
-        return Optional.of(packedFoundLen >> 1);
+        return Optional.of(foundLen);
     }
 
     /**
@@ -1326,7 +1388,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[], byte[])
      */
     public Optional<Integer> seekRange(final ByteBuffer filterMin, final byte[] filterMax,
             final ByteBuffer foundBuf) throws HseException {
@@ -1352,15 +1413,12 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
             foundBufPos = foundBuf.position();
         }
 
-        final int packedFoundLen = seekRange(this.handle, filterMin, filterMinLen, filterMinPos,
+        final int foundLen = seekRange(this.handle, filterMin, filterMinLen, filterMinPos,
             filterMax, filterMaxLen, foundBuf, foundBufSz, foundBufPos, 0);
-        final boolean found = (packedFoundLen & 0b1) == 1;
 
-        if (!found) {
+        if (foundLen == 0) {
             return Optional.empty();
         }
-
-        final int foundLen = packedFoundLen >> 1;
 
         if (foundBuf != null) {
             foundBuf.limit(Math.min(foundBuf.limit(), foundBufPos + foundLen));
@@ -1372,7 +1430,44 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 byte arrays.</p>
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     *
+     * @param filterMin Filter minimum.
+     * @param filterMax Filter maximum.
+     * @param foundBuf Next key in sequence.
+     * @return Length of the found key.
+     * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
+     * @throws HseException Underlying C function returned a non-zero value.
+     */
+    public Optional<Integer> seekRange(final ByteBuffer filterMin, final String filterMax,
+            final byte[] foundBuf) throws HseException {
+        int filterMinLen = 0;
+        int filterMinPos = 0;
+        if (filterMin != null) {
+            assert filterMin.isDirect();
+
+            filterMinLen = filterMin.remaining();
+            filterMinPos = filterMin.position();
+
+            filterMin.position(filterMin.limit());
+        }
+
+        final int foundBufSz = foundBuf == null ? 0 : foundBuf.length;
+
+        final int foundLen = seekRange(this.handle, filterMin, filterMinLen, filterMinPos,
+            filterMax, foundBuf, foundBufSz, 0);
+
+        if (foundLen == 0) {
+            return Optional.empty();
+        }
+
+        return Optional.of(foundLen);
+    }
+
+    /**
+     * Refer to {@link #seekRange(byte[], byte[], byte[])}.
+     *
+     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
@@ -1382,14 +1477,94 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(ByteBuffer, byte[], ByteBuffer)
      */
     public Optional<Integer> seekRange(final ByteBuffer filterMin, final String filterMax,
             final ByteBuffer foundBuf) throws HseException {
-        final byte[] filterMaxData = filterMax == null
-            ? null : filterMax.getBytes(StandardCharsets.UTF_8);
+        int filterMinLen = 0;
+        int filterMinPos = 0;
+        if (filterMin != null) {
+            assert filterMin.isDirect();
 
-        return seekRange(filterMin, filterMaxData, foundBuf);
+            filterMinLen = filterMin.remaining();
+            filterMinPos = filterMin.position();
+
+            filterMin.position(filterMin.limit());
+        }
+
+        int foundBufSz = 0;
+        int foundBufPos = 0;
+        if (foundBuf != null) {
+            assert foundBuf.isDirect();
+
+            foundBufSz = foundBuf.remaining();
+            foundBufPos = foundBuf.position();
+        }
+
+        final int foundLen = seekRange(this.handle, filterMin, filterMinLen, filterMinPos,
+            filterMax, foundBuf, foundBufSz, foundBufPos, 0);
+
+        if (foundLen == 0) {
+            return Optional.empty();
+        }
+
+        if (foundBuf != null) {
+            foundBuf.limit(Math.min(foundBuf.limit(), foundBufPos + foundLen));
+        }
+
+        return Optional.of(foundLen);
+    }
+
+    /**
+     * Refer to {@link #seekRange(byte[], byte[], byte[])}.
+     *
+     * <p>Any {@link ByteBuffer} arguments must be direct.</p>
+     *
+     * <p>
+     * Note that the length of any byte buffer given to HSE is
+     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * </p>
+     *
+     * @param filterMin Filter minimum.
+     * @param filterMax Filter maximum.
+     * @param foundBuf Next key in sequence.
+     * @return Length of the found key.
+     * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
+     * @throws HseException Underlying C function returned a non-zero value.
+     */
+    public Optional<Integer> seekRange(final ByteBuffer filterMin, final ByteBuffer filterMax,
+            final byte[] foundBuf) throws HseException {
+        int filterMinLen = 0;
+        int filterMinPos = 0;
+        if (filterMin != null) {
+            assert filterMin.isDirect();
+
+            filterMinLen = filterMin.remaining();
+            filterMinPos = filterMin.position();
+
+            filterMin.position(filterMin.limit());
+        }
+
+        int filterMaxLen = 0;
+        int filterMaxPos = 0;
+        if (filterMax != null) {
+            assert filterMax.isDirect();
+
+            filterMaxLen = filterMax.remaining();
+            filterMaxPos = filterMax.position();
+
+            filterMax.position(filterMax.limit());
+        }
+
+        final int foundBufSz = foundBuf == null ? 0 : foundBuf.length;
+
+        final int foundLen = seekRange(this.handle, filterMin, filterMinLen, filterMinPos,
+            filterMax, filterMaxLen, filterMaxPos, foundBuf, foundBufSz, 0);
+
+        if (foundLen == 0) {
+            return Optional.empty();
+        }
+
+        return Optional.of(foundLen);
     }
 
     /**
@@ -1410,7 +1585,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #seekRange(byte[], byte[], byte[])
      */
     public Optional<Integer> seekRange(final ByteBuffer filterMin, final ByteBuffer filterMax,
             final ByteBuffer foundBuf) throws HseException {
@@ -1445,15 +1619,12 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
             foundBufPos = foundBuf.position();
         }
 
-        final int packedFoundLen = seekRange(this.handle, filterMin, filterMinLen, filterMinPos,
+        final int foundLen = seekRange(this.handle, filterMin, filterMinLen, filterMinPos,
             filterMax, filterMaxLen, filterMaxPos, foundBuf, foundBufSz, foundBufPos, 0);
-        final boolean found = (packedFoundLen & 0b1) == 1;
 
-        if (!found) {
+        if (foundLen == 0) {
             return Optional.empty();
         }
-
-        final int foundLen = packedFoundLen >> 1;
 
         if (foundBuf != null) {
             foundBuf.limit(Math.min(foundBuf.limit(), foundBufPos + foundLen));

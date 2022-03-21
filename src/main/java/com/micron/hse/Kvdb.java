@@ -110,7 +110,6 @@ public final class Kvdb extends NativeObject implements AutoCloseable {
      * <p>{@code flags} defaults to {@code null}.</p>
      *
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #compact(EnumSet)
      */
     public void compact() throws HseException {
         compact(null);
@@ -262,10 +261,11 @@ public final class Kvdb extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * {@code flags} defaults to {@code null}.
+     * Refer to {@code #sync(EnumSet)}.
+     *
+     * <p>{@code flags} defaults to {@code null}.</p>
      *
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see #sync(EnumSet)
      */
     public void sync() throws HseException {
         sync(null);
