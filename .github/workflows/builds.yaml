@@ -55,13 +55,23 @@ jobs:
         run: |
           git -C "subprojects/$b" checkout ${{ github.head_ref }} || true
 
+      - name: Get Meson on ubuntu-18.04
+        if: ${{ matrix.os == 'ubuntu-18.04' }}
+        run: |
+          sudo apt-get install python3.7
+          sudo python3.7 -m pip install meson
+
+      - name: Get Meson on ubuntu-20.04
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        run: |
+          sudo python3 -m pip install meson
+
       - name: Initialize
         run: |
           sudo apt-get update
           sudo apt-get install build-essential ninja-build pkg-config maven \
             openjdk-8-jdk libbsd-dev libmicrohttpd-dev liburcu-dev \
             libyaml-dev liblz4-dev libcurl4-openssl-dev
-          sudo python3 -m pip install meson
 
       - name: Setup
         run: |
@@ -86,7 +96,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: fedora:${{ matrix.image-tag }}
-      options: --privileged  -v /usr/src:/usr/src -v /lib/modules:/lib/modules
     strategy:
       fail-fast: false
       matrix:
@@ -112,10 +121,11 @@ jobs:
         run: |
           dnf group install -y --with-optional \
             "C Development Tools and Libraries"
-          dnf install -y git ninja-build meson pkg-config maven \
+          dnf install -y git python3-pip ninja-build pkg-config maven \
             java-1.8.0-openjdk-devel libmicrohttpd-devel userspace-rcu-devel \
             libyaml-devel lz4-devel libbsd-devel libcurl-devel libxml2-devel \
             libxslt-devel
+          python3 -m pip install meson
 
       - name: Setup
         run: |
@@ -140,7 +150,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: almalinux:${{ matrix.image-tag }}
-      options: --privileged  -v /usr/src:/usr/src -v /lib/modules:/lib/modules
     strategy:
       fail-fast: false
       matrix:
@@ -164,12 +173,13 @@ jobs:
 
       - name: Initialize
         run: |
-          dnf install -y sudo dnf-plugins-core epel-release
+          dnf install -y dnf-plugins-core epel-release
+          dnf update -y
           dnf config-manager --set-enabled powertools
           dnf group install -y --with-optional "Development Tools"
           dnf install -y git ninja-build pkg-config maven \
             java-1.8.0-openjdk-devel libmicrohttpd-devel userspace-rcu-devel \
-            libyaml-devel lz4-devel libbsd-devel libcurl-devel python36 \
+            libyaml-devel lz4-devel libbsd-devel libcurl-devel python38 \
             libxml2 libxslt
           python3 -m pip install meson
 
