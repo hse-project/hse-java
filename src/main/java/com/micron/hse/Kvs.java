@@ -396,13 +396,14 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #cursor(byte[], EnumSet, KvdbTransaction)}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param filter Iteration limited to keys matching this prefix filter.
      * @param flags Flags for operation specialization.
      * @param txn Transaction context.
      * @return Cursor.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public KvsCursor cursor(final String filter, final EnumSet<CreateFlags> flags,
             final KvdbTransaction txn) throws HseException {
@@ -416,7 +417,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param filter Iteration limited to keys matching this prefix filter.
@@ -491,11 +492,12 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #delete(byte[], KvdbTransaction)}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param key Transaction context.
      * @param txn Key to delete.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public void delete(final String key, final KvdbTransaction txn) throws HseException {
         final long txnHandle = txn == null ? 0 : txn.handle;
@@ -510,7 +512,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param key Key to delete.
@@ -598,13 +600,14 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param key Key to get.
      * @param txn Transaction context.
      * @return Buffer into which the value associated with {@code key} will be
      *      copied.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<byte[]> get(final String key, final KvdbTransaction txn) throws HseException {
         final long txnHandle = txn == null ? 0 : txn.handle;
@@ -619,7 +622,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param key Key to get.
@@ -776,7 +779,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param key Key to get.
      * @param valueBuf Buffer into which the value associated with {@code key}
@@ -784,6 +787,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @param txn Transaction context.
      * @return Actual length of the value if {@code key} was found.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<Integer> get(final String key, final byte[] valueBuf, final KvdbTransaction txn)
             throws HseException {
@@ -805,7 +809,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param key Key to get.
@@ -851,7 +855,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param key Key to get.
@@ -899,7 +903,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param key Key to get.
      * @param valueBuf Buffer into which the value associated with {@code key}
@@ -909,6 +913,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @return Actual length of the value if {@code key} was found.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<Integer> get(final String key, final ByteBuffer valueBuf,
             final KvdbTransaction txn) throws HseException {
@@ -947,7 +952,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param key Key to get.
@@ -1101,11 +1106,12 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #prefixDelete(byte[], KvdbTransaction)}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param pfx Prefix of keys to delete.
      * @param txn Transaction context.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public void prefixDelete(final String pfx, final KvdbTransaction txn) throws HseException {
         final long txnHandle = txn == null ? 0 : txn.handle;
@@ -1120,7 +1126,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param pfx Prefix of keys to delete.
@@ -1602,13 +1608,14 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param key Key to put into the KVS.
      * @param value Value associated with {@code key}.
      * @param flags Flags for operation specialization.
      * @param txn Transaction context.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public void put(final byte[] key, final String value, final EnumSet<PutFlags> flags,
             final KvdbTransaction txn) throws HseException {
@@ -1629,7 +1636,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param key Key to put into the KVS.
@@ -1666,13 +1673,14 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param key Key to put into the KVS.
      * @param value Value associated with {@code key}.
      * @param flags Flags for operation specialization.
      * @param txn Transaction context.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public void put(final String key, final byte[] value, final EnumSet<PutFlags> flags,
             final KvdbTransaction txn) throws HseException {
@@ -1689,13 +1697,14 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param key Key to put into the KVS.
      * @param value Value associated with {@code key}.
      * @param flags Flags for operation specialization.
      * @param txn Transaction context.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public void put(final String key, final String value, final EnumSet<PutFlags> flags,
             final KvdbTransaction txn) throws HseException {
@@ -1710,13 +1719,14 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param key Key to put into the KVS.
      * @param value Value associated with {@code key}.
      * @param flags Flags for operation specialization.
      * @param txn Transaction context.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public void put(final String key, final ByteBuffer value, final EnumSet<PutFlags> flags,
             final KvdbTransaction txn) throws HseException {
@@ -1746,7 +1756,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param key Key to put into the KVS.
@@ -1781,13 +1791,13 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * <p>Any {@link ByteBuffer} arguments must be direct.</p>
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param key Key to put into the KVS.
@@ -1796,6 +1806,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @param txn Transaction context.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public void put(final ByteBuffer key, final String value,
             final EnumSet<PutFlags> flags, final KvdbTransaction txn) throws HseException {
@@ -1825,7 +1836,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param key Key to put into the KVS.
