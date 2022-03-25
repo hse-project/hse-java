@@ -13,7 +13,7 @@ project(
         # options :).
         'force_fallback_for=xxhash,lz4,cjson',
     ],
-    meson_version: '>= 0.59.0'
+    meson_version: '>= 0.62.0'
 )
 
 package = 'com.micron.hse'
@@ -27,6 +27,7 @@ hse_java_patch_version = version_components[2]
 jar_filename = 'hse-@0@.jar'.format(meson.project_version())
 
 fs = import('fs')
+javamod = import('java')
 
 cc = meson.get_compiler('c')
 javac = meson.get_compiler('java')
@@ -35,7 +36,7 @@ mvn = find_program('mvn', required: get_option('tests'), disabler: true)
 
 python = find_program('python3', required: get_option('tests'))
 
-jdk_dep = dependency('jdk', version: '>= 1.8.0')
+jni_dep = dependency('jni', version: '>= 1.8.0')
 hse_dep = dependency(
     'hse-2',
     version: '>= 2.2.0',
@@ -100,22 +101,20 @@ if not meson.is_subproject()
         ]
     )
 
-    if mvn.found()
-        run_target(
-            'deploy',
-            command: [
-                'sh',
-                '-c',
-                ' '.join([
-                    mvn.full_path(),
-                    'deploy:deploy-file',
-                    '"-Durl=${HSE_JAVA_DEPLOY_URL:-file://$HOME/.m2/repository}"',
-                    '-Dmaven.test.skip=true',
-                    '-DpomFile=' + meson.project_source_root() / 'pom.xml',
-                    '-Dfile=' + hse_jar.full_path(),
-                ])
-            ],
-            depends: [hse_jar]
-        )
-    endif
+    run_target(
+        'deploy',
+        command: [
+            'sh',
+            '-c',
+            ' '.join([
+                mvn.full_path(),
+                'deploy:deploy-file',
+                '"-Durl=${HSE_JAVA_DEPLOY_URL:-file://$HOME/.m2/repository}"',
+                '-Dmaven.test.skip=true',
+                '-DpomFile=' + meson.project_source_root() / 'pom.xml',
+                '-Dfile=' + hse_jar.full_path(),
+            ])
+        ],
+        depends: [hse_jar]
+    )
 endif
