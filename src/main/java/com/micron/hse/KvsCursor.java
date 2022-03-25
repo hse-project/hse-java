@@ -210,7 +210,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param keyBuf Buffer into which the next key will be copied.
@@ -251,7 +251,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param keyBuf Buffer into which the next key will be copied.
@@ -292,7 +292,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param keyBuf Buffer into which the next key will be copied.
@@ -356,11 +356,12 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seek(byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param key Key to find.
      * @return Next key in sequence.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<byte[]> seek(final String key) throws HseException {
         return Optional.ofNullable(seek(this.handle, key, 0));
@@ -373,7 +374,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param key Key to find.
@@ -430,7 +431,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param key Key to find.
@@ -470,12 +471,13 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seek(byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param key Key to find.
      * @param foundBuf Next key in sequence.
      * @return Length of the found key.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<Integer> seek(final String key, final byte[] foundBuf) throws HseException {
         final int foundBufSz = foundBuf == null ? 0 : foundBuf.length;
@@ -492,7 +494,14 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seek(byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
+     *
+     * <p>Any {@link ByteBuffer} arguments must be direct.</p>
+     *
+     * <p>
+     * Note that the length of any byte buffer given to HSE is
+     * {@link ByteBuffer#remaining}.
+     * </p>
      *
      * @param key Key to find.
      * @param foundBuf Next key in sequence. {@link ByteBuffer#limit(int)} will
@@ -501,6 +510,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<Integer> seek(final String key, final ByteBuffer foundBuf)
             throws HseException {
@@ -533,7 +543,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param key Key to find.
@@ -569,13 +579,13 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seek(byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * <p>Any {@link ByteBuffer} arguments must be direct.</p>
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param key Key to find.
@@ -585,6 +595,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<Integer> seek(final ByteBuffer key, final ByteBuffer foundBuf)
             throws HseException {
@@ -642,12 +653,13 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
      * @return Next key in sequence.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<byte[]> seekRange(final byte[] filterMin, final String filterMax)
             throws HseException {
@@ -663,7 +675,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param filterMin Filter minimum.
@@ -694,12 +706,13 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
      * @return Next key in sequence.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<byte[]> seekRange(final String filterMin, final byte[] filterMax)
             throws HseException {
@@ -711,12 +724,13 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
      * @return Next key in sequence.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<byte[]> seekRange(final String filterMin, final String filterMax)
             throws HseException {
@@ -726,13 +740,21 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
+     *
+     * <p>Any {@link ByteBuffer} arguments must be direct.</p>
+     *
+     * <p>
+     * Note that the length of any byte buffer given to HSE is
+     * {@link ByteBuffer#remaining}.
+     * </p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
      * @return Next key in sequence.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<byte[]> seekRange(final String filterMin, final ByteBuffer filterMax)
             throws HseException {
@@ -758,7 +780,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param filterMin Filter minimum.
@@ -789,13 +811,21 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
+     *
+     * <p>Any {@link ByteBuffer} arguments must be direct.</p>
+     *
+     * <p>
+     * Note that the length of any byte buffer given to HSE is
+     * {@link ByteBuffer#remaining}.
+     * </p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
      * @return Next key in sequence.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<byte[]> seekRange(final ByteBuffer filterMin, final String filterMax)
             throws HseException {
@@ -821,7 +851,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param filterMin Filter minimum.
@@ -902,7 +932,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param filterMin Filter minimum.
@@ -945,13 +975,14 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
      * @param foundBuf Next key in sequence.
      * @return Length of the found key.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<Integer> seekRange(final byte[] filterMin, final String filterMax,
             final byte[] foundBuf) throws HseException {
@@ -971,7 +1002,14 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
+     *
+     * <p>Any {@link ByteBuffer} arguments must be direct.</p>
+     *
+     * <p>
+     * Note that the length of any byte buffer given to HSE is
+     * {@link ByteBuffer#remaining}.
+     * </p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
@@ -981,6 +1019,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<Integer> seekRange(final byte[] filterMin, final String filterMax,
             final ByteBuffer foundBuf) throws HseException {
@@ -1016,7 +1055,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param filterMin Filter minimum.
@@ -1060,7 +1099,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param filterMin Filter minimum.
@@ -1113,13 +1152,14 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
      * @param foundBuf Next key in sequence.
      * @return Length of the found key.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<Integer> seekRange(final String filterMin, final byte[] filterMax,
             final byte[] foundBuf) throws HseException {
@@ -1139,7 +1179,14 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
+     *
+     * <p>Any {@link ByteBuffer} arguments must be direct.</p>
+     *
+     * <p>
+     * Note that the length of any byte buffer given to HSE is
+     * {@link ByteBuffer#remaining}.
+     * </p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
@@ -1149,6 +1196,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<Integer> seekRange(final String filterMin, final byte[] filterMax,
             final ByteBuffer foundBuf) throws HseException {
@@ -1180,13 +1228,14 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
      * @param foundBuf Next key in sequence.
      * @return Length of the found key.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<Integer> seekRange(final String filterMin, final String filterMax,
             final byte[] foundBuf) throws HseException {
@@ -1204,7 +1253,14 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
+     *
+     * <p>Any {@link ByteBuffer} arguments must be direct.</p>
+     *
+     * <p>
+     * Note that the length of any byte buffer given to HSE is
+     * {@link ByteBuffer#remaining}.
+     * </p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
@@ -1214,6 +1270,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<Integer> seekRange(final String filterMin, final String filterMax,
             final ByteBuffer foundBuf) throws HseException {
@@ -1243,7 +1300,14 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
+     *
+     * <p>Any {@link ByteBuffer} arguments must be direct.</p>
+     *
+     * <p>
+     * Note that the length of any byte buffer given to HSE is
+     * {@link ByteBuffer#remaining}.
+     * </p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
@@ -1251,6 +1315,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<Integer> seekRange(final String filterMin, final ByteBuffer filterMax,
             final byte[] foundBuf) throws HseException {
@@ -1280,7 +1345,14 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
+     *
+     * <p>Any {@link ByteBuffer} arguments must be direct.</p>
+     *
+     * <p>
+     * Note that the length of any byte buffer given to HSE is
+     * {@link ByteBuffer#remaining}.
+     * </p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
@@ -1290,6 +1362,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<Integer> seekRange(final String filterMin, final ByteBuffer filterMax,
             final ByteBuffer foundBuf) throws HseException {
@@ -1334,7 +1407,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param filterMin Filter minimum.
@@ -1377,7 +1450,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param filterMin Filter minimum.
@@ -1430,7 +1503,14 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
+     *
+     * <p>Any {@link ByteBuffer} arguments must be direct.</p>
+     *
+     * <p>
+     * Note that the length of any byte buffer given to HSE is
+     * {@link ByteBuffer#remaining}.
+     * </p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
@@ -1438,6 +1518,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<Integer> seekRange(final ByteBuffer filterMin, final String filterMax,
             final byte[] foundBuf) throws HseException {
@@ -1467,7 +1548,14 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     /**
      * Refer to {@link #seekRange(byte[], byte[], byte[])}.
      *
-     * <p>Any {@link String} arguments are converted to UTF-8 bytes.</p>
+     * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
+     *
+     * <p>Any {@link ByteBuffer} arguments must be direct.</p>
+     *
+     * <p>
+     * Note that the length of any byte buffer given to HSE is
+     * {@link ByteBuffer#remaining}.
+     * </p>
      *
      * @param filterMin Filter minimum.
      * @param filterMax Filter maximum.
@@ -1477,6 +1565,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      * @return Length of the found key.
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
+     * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<Integer> seekRange(final ByteBuffer filterMin, final String filterMax,
             final ByteBuffer foundBuf) throws HseException {
@@ -1521,7 +1610,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param filterMin Filter minimum.
@@ -1574,7 +1663,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
      *
      * <p>
      * Note that the length of any byte buffer given to HSE is
-     * {@link ByteBuffer#limit()} - {@link ByteBuffer#position()}.
+     * {@link ByteBuffer#remaining}.
      * </p>
      *
      * @param filterMin Filter minimum.

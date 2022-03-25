@@ -9,6 +9,7 @@
 
   <module name="LineLength">
     <property name="max" value="100" />
+    <property name="ignorePattern" value="@see &lt;a href=&quot;https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8&quot;&gt;Modified UTF-8&lt;/a&gt;"/>
   </module>
 
   <module name="JavadocPackage">
