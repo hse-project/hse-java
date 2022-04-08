@@ -15,6 +15,5 @@ java_sources = files(
 hse_jar = jar(
     fs.stem(jar_filename),
     java_sources,
-    install: true,
-    install_dir: get_option('datadir') / 'java'
+    install: true
 )
