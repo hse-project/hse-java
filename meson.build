@@ -56,65 +56,63 @@ hse_dep = dependency(
 subdir('src')
 subdir('docs')
 
-if not meson.is_subproject()
-    run_target(
-        'checkoss',
-        command: [
-            find_program('scripts/dev/checkoss.sh'),
-            '@BUILD_ROOT@',
-            '@SOURCE_ROOT@',
-        ],
-    )
+run_target(
+    'checkoss',
+    command: [
+        find_program('scripts/dev/checkoss.sh'),
+        '@BUILD_ROOT@',
+        '@SOURCE_ROOT@',
+    ]
+)
 
-    shellcheck = find_program('shellcheck', required: false)
-    if shellcheck.found()
-        run_target(
-            'shellcheck',
-            command: [
-                find_program('scripts/dev/shellcheck.sh'),
-            ]
-        )
-    endif
+run_target(
+    'jshell',
+    command: [
+        find_program('jshell', required: false, disabler: true),
+    ],
+    depends: [
+        hsejni,
+        hse_jar,
+    ],
+    env: environment({
+        'LD_LIBRARY_PATH': fs.parent(hsejni.full_path()),
+        'CLASSPATH': hse_jar.full_path(),
+    })
+)
 
-    run_target(
-        'jshell',
-        command: [
-            find_program('jshell', required: false, disabler: true),
-        ],
-        depends: [
-            hsejni,
-            hse_jar,
-        ],
-        env: environment({
-            'LD_LIBRARY_PATH': fs.parent(hsejni.full_path()),
-            'CLASSPATH': hse_jar.full_path(),
-        })
-    )
+run_target(
+    'checkstyle',
+    command: [
+        mvn,
+        '-f',
+        meson.project_source_root() / 'pom.xml',
+        'checkstyle:check'
+    ]
+)
 
+run_target(
+    'deploy',
+    command: [
+        'sh',
+        '-c',
+        ' '.join([
+            mvn.full_path(),
+            'deploy:deploy-file',
+            '"-Durl=${HSE_JAVA_DEPLOY_URL:-file://$HOME/.m2/repository}"',
+            '-Dmaven.test.skip=true',
+            '-DpomFile=' + meson.project_source_root() / 'pom.xml',
+            '-Dfile=' + hse_jar.full_path(),
+        ])
+    ],
+    depends: [hse_jar]
+)
+
+shellcheck = find_program('shellcheck', required: false)
+if shellcheck.found()
     run_target(
-        'checkstyle',
+        'shellcheck',
         command: [
-            mvn,
-            '-f',
-            meson.project_source_root() / 'pom.xml',
-            'checkstyle:check'
+            find_program('scripts/dev/shellcheck.sh'),
         ]
-    )
-
-    run_target(
-        'deploy',
-        command: [
-            'sh',
-            '-c',
-            ' '.join([
-                mvn.full_path(),
-                'deploy:deploy-file',
-                '"-Durl=${HSE_JAVA_DEPLOY_URL:-file://$HOME/.m2/repository}"',
-                '-Dmaven.test.skip=true',
-                '-DpomFile=' + meson.project_source_root() / 'pom.xml',
-                '-Dfile=' + hse_jar.full_path(),
-            ])
-        ],
-        depends: [hse_jar]
     )
 endif
