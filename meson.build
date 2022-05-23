@@ -56,6 +56,30 @@ hse_dep = dependency(
 subdir('src')
 subdir('docs')
 
+if mvn.found()
+    if get_option('repo') == ''
+        repo = 'file://' + run_command(
+            mvn,
+            'help:evaluate',
+            '-Dexpression=settings.localRepository',
+            '--quiet',
+            '-DforceStdout',
+            check: true
+        ).stdout().strip()
+    else
+        repo = get_option('repo')
+    endif
+
+    meson.add_install_script(
+            mvn,
+            'deploy:deploy-file',
+            '-Durl=' + repo,
+            '-Dmaven.test.skip=true',
+            '-DpomFile=' + meson.project_source_root() / 'pom.xml',
+            '-Dfile=' + hse_jar.full_path()
+    )
+endif
+
 run_target(
     'checkoss',
     command: [
@@ -88,23 +112,6 @@ run_target(
         meson.project_source_root() / 'pom.xml',
         'checkstyle:check'
     ]
-)
-
-run_target(
-    'deploy',
-    command: [
-        'sh',
-        '-c',
-        ' '.join([
-            mvn.full_path(),
-            'deploy:deploy-file',
-            '"-Durl=${HSE_JAVA_DEPLOY_URL:-file://$HOME/.m2/repository}"',
-            '-Dmaven.test.skip=true',
-            '-DpomFile=' + meson.project_source_root() / 'pom.xml',
-            '-Dfile=' + hse_jar.full_path(),
-        ])
-    ],
-    depends: [hse_jar]
 )
 
 shellcheck = find_program('shellcheck', required: false)
