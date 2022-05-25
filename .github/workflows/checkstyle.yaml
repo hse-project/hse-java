@@ -11,11 +11,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Initialize
-        run: |
-          sudo apt-get install maven
+      - name: Checkout hse-java
+        uses: actions/checkout@v3
 
-      - uses: actions/checkout@v3
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: '17'
 
       - name: checkstyle
         run: |
