@@ -39,6 +39,8 @@ jobs:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04]
         buildtype: [release, debug]
+        jdk-distribution: [adopt]
+        jdk-version: ["8"]
 
     steps:
       - name: Checkout hse-java
@@ -54,6 +56,14 @@ jobs:
       - name: Post-checkout
         run: |
           git -C "subprojects/$b" checkout ${{ github.head_ref }} || true
+
+      - name: Setup Java
+        id: setup-java
+        uses: actions/setup-java@v3
+        with:
+          distribution: ${{ matrix.jdk-distribution }}
+          java-version: ${{ matrix.jdk-version }}
+          cache: maven
 
       - name: Get Meson on ubuntu-18.04
         if: ${{ matrix.os == 'ubuntu-18.04' }}
@@ -72,6 +82,14 @@ jobs:
           sudo apt-get install build-essential ninja-build pkg-config maven \
             openjdk-8-jdk libbsd-dev libmicrohttpd-dev liburcu-dev \
             libyaml-dev liblz4-dev libcurl4-openssl-dev
+
+      # Download all dependencies up front if cache wasn't hit. Will keep
+      # Maven from downloading dependencies during the test phase which could
+      # cause tests to timeout.
+      - name: Download Maven Dependencies
+        if: steps.setup-java.outputs.cache-hit != 'true'
+        run: |
+          mvn dependency:go-offline
 
       - name: Setup
         run: |
@@ -101,6 +119,8 @@ jobs:
       matrix:
         image-tag: [36]
         buildtype: [release, debug]
+        jdk-distribution: [adopt]
+        jdk-version: ["11"]
 
     steps:
       - name: Checkout hse-java
@@ -117,15 +137,30 @@ jobs:
         run: |
           git -C "subprojects/$b" checkout ${{ github.head_ref }} || true
 
+      - name: Setup Java
+        id: setup-java
+        uses: actions/setup-java@v3
+        with:
+          distribution: ${{ matrix.jdk-distribution }}
+          java-version: ${{ matrix.jdk-version }}
+          cache: maven
+
       - name: Initialize
         run: |
           dnf group install -y --with-optional \
             "C Development Tools and Libraries"
           dnf install -y git python3-pip ninja-build pkg-config maven \
-            java-1.8.0-openjdk-devel libmicrohttpd-devel userspace-rcu-devel \
-            libyaml-devel lz4-devel libbsd-devel libcurl-devel libxml2-devel \
-            libxslt-devel
+            libmicrohttpd-devel userspace-rcu-devel libyaml-devel lz4-devel \
+            libbsd-devel libcurl-devel libxml2-devel libxslt-devel
           python3 -m pip install meson
+
+      # Download all dependencies up front if cache wasn't hit. Will keep
+      # Maven from downloading dependencies during the test phase which could
+      # cause tests to timeout.
+      - name: Download Maven Dependencies
+        if: steps.setup-java.outputs.cache-hit != 'true'
+        run: |
+          mvn dependency:go-offline
 
       - name: Setup
         run: |
@@ -155,6 +190,8 @@ jobs:
       matrix:
         image-tag: [8]
         buildtype: [release, debug]
+        jdk-distribution: [adopt]
+        jdk-version: ["17"]
 
     steps:
       - name: Checkout hse-java
@@ -171,17 +208,32 @@ jobs:
         run: |
           git -C "subprojects/$b" checkout ${{ github.head_ref }} || true
 
+      - name: Setup Java
+        id: setup-java
+        uses: actions/setup-java@v3
+        with:
+          distribution: ${{ matrix.jdk-distribution }}
+          java-version: ${{ matrix.jdk-version }}
+          cache: maven
+
       - name: Initialize
         run: |
           dnf install -y dnf-plugins-core epel-release
           dnf update -y
           dnf config-manager --set-enabled powertools
           dnf group install -y --with-optional "Development Tools"
-          dnf install -y git ninja-build pkg-config maven \
-            java-1.8.0-openjdk-devel libmicrohttpd-devel userspace-rcu-devel \
-            libyaml-devel lz4-devel libbsd-devel libcurl-devel python38 \
-            libxml2 libxslt
+          dnf install -y git ninja-build pkg-config maven libmicrohttpd-devel \
+            userspace-rcu-devel libyaml-devel lz4-devel libbsd-devel \
+            libcurl-devel python38 libxml2 libxslt
           python3 -m pip install meson
+
+      # Download all dependencies up front if cache wasn't hit. Will keep
+      # Maven from downloading dependencies during the test phase which could
+      # cause tests to timeout.
+      - name: Download Maven Dependencies
+        if: steps.setup-java.outputs.cache-hit != 'true'
+        run: |
+          mvn dependency:go-offline
 
       - name: Setup
         run: |
@@ -211,6 +263,8 @@ jobs:
       matrix:
         buildtype: [release, debug]
         arch: [s390x]
+        jdk-distribution: [adopt]
+        jdk-version: ["17"]
 
     steps:
       - name: Checkout hse-java
@@ -227,17 +281,33 @@ jobs:
         run: |
           git -C subprojects/hse checkout ${{ github.head_ref }} || true
 
+      - name: Setup Java
+        id: setup-java
+        uses: actions/setup-java@v3
+        with:
+          distribution: ${{ matrix.jdk-distribution }}
+          java-version: ${{ matrix.jdk-version }}
+          cache: maven
+
       - name: Initialize
         run: |
           dpkg --add-architecture ${{ matrix.arch }}
           apt-get -y update
-          apt-get -y install python3 python3-pip pkg-config ninja-build \
+          apt-get -y install python3 python3-pip pkg-config ninja-build maven \
             build-essential crossbuild-essential-${{ matrix.arch }} \
             libpython3-dev:${{ matrix.arch }} liburcu-dev:${{ matrix.arch }} \
             libcurl4-openssl-dev:${{ matrix.arch }} \
             libbsd-dev:${{ matrix.arch }} libmicrohttpd-dev:${{ matrix.arch }} \
-            libyaml-dev:${{ matrix.arch }} openjdk-11-jdk maven
+            libyaml-dev:${{ matrix.arch }}
           python3 -m pip install meson Cython
+
+      # Download all dependencies up front if cache wasn't hit. Will keep
+      # Maven from downloading dependencies during the test phase which could
+      # cause tests to timeout.
+      - name: Download Maven Dependencies
+        if: steps.setup-java.outputs.cache-hit != 'true'
+        run: |
+          mvn dependency:go-offline
 
       - name: Setup
         run: |

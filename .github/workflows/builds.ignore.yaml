@@ -36,6 +36,8 @@ jobs:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04]
         buildtype: [release, debug]
+        jdk-distribution: [adopt]
+        jdk-version: ["8"]
 
     steps:
       - run: |
@@ -48,6 +50,8 @@ jobs:
       matrix:
         image-tag: [36]
         buildtype: [release, debug]
+        jdk-distribution: [adopt]
+        jdk-version: ["11"]
 
     steps:
       - run: |
@@ -60,6 +64,8 @@ jobs:
       matrix:
         image-tag: [8]
         buildtype: [release, debug]
+        jdk-distribution: [adopt]
+        jdk-version: ["17"]
 
     steps:
       - run: |
@@ -72,6 +78,8 @@ jobs:
       matrix:
         buildtype: [release, debug]
         arch: [s390x]
+        jdk-distribution: [adopt]
+        jdk-version: ["17"]
 
     steps:
       - run: |
