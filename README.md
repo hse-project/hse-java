@@ -57,34 +57,10 @@ configuring the build with either `-Dprefix=$prefix` or `--prefix=$prefix`.
 meson install -C build
 ```
 
-If you need to place the JAR into a repository local/remote repository, use the
-`deploy` run target.
-
-```shell
-ninja -C build deploy
-```
-
-The `deploy` run target is keyed off of an environment variable
-`HSE_JAVA_DEPLOY_URL`. The default is the user's default local Maven repository,
-`$HOME/.m2/repository`. In the event you need to tell another project about your
-non-default Maven repository, you can do the following:
-
-On the command line:
-
-```shell
-mvn -Dmaven.repo.local=path/to/local/repo
-```
-
-Through a Maven `settings.xml` file:
-
-```xml
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
-    http://maven.apache.org/xsd/settings-1.0.0.xsd">
-  <localRepository>path/to/local/repo</localRepository>
-</settings>
-```
+Note that this will also install the JAR file to the output of
+`mvn help:evaluate -Dexpression=settings.localRepository` by default. If it must
+be deployed to another repository, set `-Drepo` using a URI syntax,
+`file://...`.
 
 ## Recommendations
 

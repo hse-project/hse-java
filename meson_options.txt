@@ -4,3 +4,5 @@ option('tests', type: 'boolean', value: true,
     description: 'Build tests')
 option('experimental', type: 'boolean', value: true, yield: true,
     description: 'Enable support for the experimental API')
+option('repo', type: 'string', value: '',
+    description: 'Repository to deploy the JAR to on install')
