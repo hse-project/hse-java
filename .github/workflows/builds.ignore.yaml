@@ -28,6 +28,12 @@ on:
       - .shellcheckrc
       - LICENSE
 
+concurrency:
+  group: ${{ github.workflow }}-ignore-${{ github.head_ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
 jobs:
   ubuntu:
     runs-on: ubuntu-latest

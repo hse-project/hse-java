@@ -6,6 +6,12 @@ on:
     paths-ignore:
       - "**.java"
 
+concurrency:
+  group: ${{ github.workflow }}-ignore-${{ github.head_ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
 jobs:
   check:
     runs-on: ubuntu-latest
