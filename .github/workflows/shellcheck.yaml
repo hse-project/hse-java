@@ -21,7 +21,8 @@ jobs:
       image: fedora:36
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout hse-java
+        uses: actions/checkout@v3
 
       - name: Initialize
         run: |

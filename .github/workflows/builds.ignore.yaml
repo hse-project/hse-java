@@ -12,6 +12,7 @@ on:
       - "!.github/workflows/builds.yaml"
       - .clang-format
       - .gitattributes
+      - .github/dependabot.yaml
       - .gitignore
       - .shellcheckrc
       - LICENSE
@@ -24,6 +25,7 @@ on:
       - "!.github/workflows/builds.yaml"
       - .clang-format
       - .gitattributes
+      - .github/dependabot.yaml
       - .gitignore
       - .shellcheckrc
       - LICENSE
@@ -40,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        image-tag: ["18.04", "20.04"]
         buildtype: [release, debug]
         jdk-distribution: [adopt]
         jdk-version: ["8"]
