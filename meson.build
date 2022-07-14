@@ -36,10 +36,10 @@ mvn = find_program('mvn', required: get_option('tests'), disabler: true)
 
 python = find_program('python3', required: get_option('tests'))
 
-jni_dep = dependency('jni', version: '>= 1.8.0')
+jni_dep = dependency('jni', version: '>=1.8.0')
 hse_dep = dependency(
-    'hse-2',
-    version: '>= 2.2.0',
+    'hse-3',
+    version: ['>=3.0.0', '<4.0.0'],
     default_options: [
         'warning_level=0',
         'default_library=static',

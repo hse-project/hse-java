@@ -101,7 +101,7 @@ public final class Hse {
             return;
         }
 
-        System.loadLibrary("hsejni-2");
+        System.loadLibrary("hsejni-3");
 
         LIBRARY_LOADED.set(true);
     }
