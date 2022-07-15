@@ -87,6 +87,12 @@ jobs:
           path: subprojects/hse
           ref: ${{ steps.determine-branches.outputs.hse }}
 
+      - name: Cache Meson packagecache
+        uses: actions/cache@v3
+        with:
+          path: subprojects/packagecache
+          key: meson-packagecache-ubuntu:${{ matrix.image-tag }}-${{ hashFiles('subprojects/hse/subprojects/*.wrap') }}
+
       - name: Setup Java
         id: setup-java
         uses: actions/setup-java@v3
@@ -180,6 +186,12 @@ jobs:
           path: subprojects/hse
           ref: ${{ steps.determine-branches.outputs.hse }}
 
+      - name: Cache Meson packagecache
+        uses: actions/cache@v3
+        with:
+          path: subprojects/packagecache
+          key: meson-packagecache-fedora:${{ matrix.image-tag }}-${{ hashFiles('subprojects/hse/subprojects/*.wrap') }}
+
       - name: Setup Java
         id: setup-java
         uses: actions/setup-java@v3
@@ -263,6 +275,12 @@ jobs:
           repository: hse-project/hse
           path: subprojects/hse
           ref: ${{ steps.determine-branches.outputs.hse }}
+
+      - name: Cache Meson packagecache
+        uses: actions/cache@v3
+        with:
+          path: subprojects/packagecache
+          key: meson-packagecache-almalinux:${{ matrix.image-tag }}-${{ hashFiles('subprojects/hse/subprojects/*.wrap') }}
 
       - name: Setup Java
         id: setup-java
@@ -348,6 +366,12 @@ jobs:
           repository: hse-project/hse
           path: subprojects/hse
           ref: ${{ steps.determine-branches.outputs.hse }}
+
+      - name: Cache Meson packagecache
+        uses: actions/cache@v3
+        with:
+          path: subprojects/packagecache
+          key: meson-packagecache-debian:11-${{ hashFiles('subprojects/hse/subprojects/*.wrap') }}
 
       - name: Setup Java
         id: setup-java
