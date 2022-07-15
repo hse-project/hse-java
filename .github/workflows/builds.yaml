@@ -127,7 +127,7 @@ jobs:
         run: |
           meson test -C builddir --print-errorlogs --no-stdsplit
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: ${{ github.job }}-${{ matrix.image-tag }}-${{ matrix.buildtype }}
@@ -209,7 +209,7 @@ jobs:
         run: |
           meson test -C builddir --print-errorlogs --no-stdsplit
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: ${{ github.job }}-${{ matrix.image-tag }}-${{ matrix.buildtype }}
@@ -293,7 +293,7 @@ jobs:
         run: |
           meson test -C builddir --print-errorlogs --no-stdsplit
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: ${{ github.job }}-${{ matrix.image-tag }}-${{ matrix.buildtype }}
@@ -375,7 +375,7 @@ jobs:
         run: |
           ninja -C builddir
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: ${{ github.job }}-${{ matrix.arch }}-${{ matrix.buildtype }}
