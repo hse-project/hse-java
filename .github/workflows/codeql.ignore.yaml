@@ -1,0 +1,24 @@
+name: CodeQL
+
+on:
+  pull_request:
+    paths-ignore:
+      - "**.c"
+      - "**.h"
+      - "**.java"
+      - "**/meson.build"
+      - .github/workflows/codeql.yaml
+
+concurrency:
+  group: ${{ github.workflow }}-ignore-${{ github.head_ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  codeql:
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: |
+          echo "Skipping ${{ github.workflow }}/${{ github.job }}"
