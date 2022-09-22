@@ -20,11 +20,18 @@ jobs:
       - name: Checkout hse-java
         uses: actions/checkout@v3
 
-      - name: Setup Java
-        uses: actions/setup-java@v3
+      - name: Export Maven local repository
+        id: maven-local-repository
+        run: |
+          local_repository=$(mvn help:evaluate -Dexpression=settings.localRepository --quiet -DforceStdout)
+          echo "::set-output name=local-repository::$local_repository"
+
+      - name: Cache Maven dependencies
+        id: maven-dependencies
+        uses: actions/cache@v3
         with:
-          distribution: 'adopt'
-          java-version: '17'
+          path: ${{ steps.maven-local-repository.outputs.local-repository }}
+          key: maven-dependencies-${{ hashFiles('pom.xml') }}
 
       - name: checkstyle
         run: |
