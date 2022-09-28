@@ -1576,10 +1576,17 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * </p>
      *
      * <p>
-     * If compression is enabled for the given kvs, then
+     * If compression is on by default for the given kvs, then
      * {@link #put(byte[], byte[], EnumSet, KvdbTransaction)} will attempt to
      * compress the value unless the {@link PutFlags#VCOMP_OFF} flag is given.
      * Otherwise, the {@link PutFlags#VCOMP_OFF} flag is ignored.
+     * </p>
+     *
+     * <p>
+     * If compression is off by default for the given kvs, then
+     * {@link #put(byte[], byte[], EnumSet, KvdbTransaction)} will not attempt
+     * to compress a value unless the {@link PutFlags#VCOMP_ON} flag is given.
+     * Otherwise, the {@link PutFlags#VCOMP_ON} flag is ignored.
      * </p>
      *
      * <p>This function is thread safe.</p>
@@ -1887,5 +1894,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
         PRIO,
         /** Value will not be compressed. */
         VCOMP_OFF,
+        /** Value may be compressed. */
+        VCOMP_ON,
     }
 }

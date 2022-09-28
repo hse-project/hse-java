@@ -515,6 +515,9 @@ public final class KvsTest {
                 case VCOMP_OFF:
                     assertEquals(1, flag.ordinal());
                     break;
+                case VCOMP_ON:
+                    assertEquals(2, flag.ordinal());
+                    break;
                 default:
                     throw new UnsupportedOperationException("Unknown PUT flag: " + flag.toString());
             }
