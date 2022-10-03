@@ -49,7 +49,6 @@ hse_dep = dependency(
         'tools=disabled',
         'samples=false',
         'bindings=none',
-        'db_bench=false',
     ]
 )
 
