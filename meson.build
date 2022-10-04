@@ -11,7 +11,7 @@ project(
         'warning_level=3',
         # Meson for whatever reason chooses not to respect HSE's default
         # options :).
-        'force_fallback_for=xxhash,lz4,cjson',
+        'force_fallback_for=lz4,cjson',
     ],
     meson_version: '>= 0.62.0'
 )
