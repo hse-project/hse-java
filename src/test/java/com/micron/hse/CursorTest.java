@@ -32,7 +32,7 @@ public final class CursorTest {
 
     @BeforeAll
     public static void setupSuite() throws HseException {
-        Hse.init("socket.enabled=false");
+        Hse.init("rest.enabled=false");
         kvdb = TestUtils.setupKvdb();
     }
 

@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 public final class HseTest {
     @BeforeAll
     public static void setupSuite() throws HseException {
-        Hse.init("socket.enabled=false");
+        Hse.init("rest.enabled=false");
     }
 
     @AfterAll
