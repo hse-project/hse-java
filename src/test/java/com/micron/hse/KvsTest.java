@@ -51,7 +51,7 @@ public final class KvsTest {
 
     @BeforeEach
     public void setupTest() throws HseException {
-        final String[] cparams = new String[]{"prefix.length=3", "suffix.length=1"};
+        final String[] cparams = new String[]{"prefix.length=3"};
         final String[] rparams = new String[]{"transactions.enabled=true"};
 
         kvs = TestUtils.setupKvs(kvdb, "kvs", cparams, null);
