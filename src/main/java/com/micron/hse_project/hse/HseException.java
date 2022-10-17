@@ -44,6 +44,8 @@ public final class HseException extends Exception {
     /** Error context values. */
     public enum Context {
         /** No context. */
-        NONE
+        NONE,
+        /** Transaction timed out. */
+        TXN_EXPIRED,
     }
 }
