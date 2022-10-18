@@ -54,9 +54,9 @@ jobs:
         id: determine-tag
         run: |
           if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            echo "::set-output name=tag::$GITHUB_BASE_REF"
+            echo "tag=$GITHUB_BASE_REF" >> "$GITHUB_OUTPUT"
           else
-            echo "::set-output name=tag::$GITHUB_REF_NAME"
+            echo "tag=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
           fi
 
   normal:
@@ -89,7 +89,7 @@ jobs:
             skip="true"
           fi
 
-          echo "::set-output name=skip::$skip"
+          echo "skip=$skip" >> "$GITHUB_OUTPUT"
 
       - name: Checkout hse-java
         if: ${{ steps.to-skip.outputs.skip == 'false' }}
@@ -122,7 +122,7 @@ jobs:
               fi
             fi
 
-            echo "::set-output name=$p::$branch"
+            echo "$p=$branch" >> "$GITHUB_OUTPUT"
           done
 
       - name: Checkout HSE
@@ -138,7 +138,7 @@ jobs:
         if: ${{ steps.to-skip.outputs.skip == 'false' }}
         run: |
           local_repository=$(mvn help:evaluate -Dexpression=settings.localRepository --quiet -DforceStdout)
-          echo "::set-output name=local-repository::$local_repository"
+          echo "local-repository=$local_repository" >> "$GITHUB_OUTPUT"
 
       - name: Cache Maven dependencies
         id: maven-dependencies
