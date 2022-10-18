@@ -24,7 +24,7 @@ jobs:
         id: maven-local-repository
         run: |
           local_repository=$(mvn help:evaluate -Dexpression=settings.localRepository --quiet -DforceStdout)
-          echo "::set-output name=local-repository::$local_repository"
+          echo "local-repository=$local_repository" >> "$GITHUB_OUTPUT"
 
       - name: Cache Maven dependencies
         id: maven-dependencies
