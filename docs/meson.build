@@ -13,8 +13,6 @@ javadocs = custom_target(
         meson.project_source_root() / 'src/main/java',
         '-windowtitle',
         'HSE Java Bindings',
-        '-link',
-        'https://docs.oracle.com/javase/8/docs/api/',
         '-source',
         '8',
         '-quiet',
@@ -39,7 +37,7 @@ javadocs = custom_target(
         '@INPUT@',
     ],
     depend_files: files(
-        meson.project_source_root() / 'src/main/java/com/micron/hse/package-info.java'
+        meson.project_source_root() / 'src/main/java/com/micron/hse_project/hse/package-info.java'
     )
 )
 

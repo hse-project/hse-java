@@ -3,7 +3,7 @@
    http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.micron</groupId>
+  <groupId>com.micron.hse_project</groupId>
   <artifactId>hse</artifactId>
   <!-- if updated, update meson.build -->
   <version>3.0.0</version>
