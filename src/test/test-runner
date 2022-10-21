@@ -107,8 +107,8 @@ class JavaTest(Test):
     @property
     def name(self) -> str:
         for a in self._args:
-            if a.startswith("-Dtest=com.micron.hse."):
-                return a[len("-Dtest=com.micron.hse."):]
+            if a.startswith("-Dtest=com.micron.hse_project.hse."):
+                return a[len("-Dtest=com.micron.hse_project.hse.") :]
 
         return "java"
 
@@ -141,14 +141,16 @@ if __name__ == "__main__":
         "--dir",
         type=pathlib.Path,
         help="Directory to place home in; Can also set the HSE_TEST_RUNNER_DIR environment variable",
-        default=pathlib.Path(default_dir()).resolve()
+        default=pathlib.Path(default_dir()).resolve(),
     )
 
     args = cast(Args, parser.parse_args())
 
     test = Test.create(args.program, *args.arguments)
 
-    with tempfile.TemporaryDirectory(prefix=f"mtest-{test.name}-", dir=args.dir) as home:
+    with tempfile.TemporaryDirectory(
+        prefix=f"mtest-{test.name}-", dir=args.dir
+    ) as home:
         proc = subprocess.Popen(test.command_line(home))
 
         def proxy(s: int, frame: Optional[FrameType]):

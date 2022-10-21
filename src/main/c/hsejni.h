@@ -9,18 +9,6 @@
 #include <jni.h>
 #include <hse/types.h>
 
-static inline size_t
-max(const size_t a, const size_t b)
-{
-    return a > b ? a : b;
-}
-
-static inline size_t
-min(const size_t a, const size_t b)
-{
-    return a < b ? a : b;
-}
-
 /* This object is populated during the JNI_OnLoad() function. It saves various
  * class IDs, method IDs, and field IDs for caching purposes.
  */
@@ -29,39 +17,41 @@ struct globals {
         struct {
             struct {
                 struct {
-                    jclass class;
-                    jmethodID init;
                     struct {
                         jclass class;
-                        jobject NONE;
-                    } Context;
-                } HseException;
-                struct {
+                        jmethodID init;
+                        struct {
+                            jclass class;
+                            jobject NONE;
+                        } Context;
+                    } HseException;
+                    struct {
+                        struct {
+                            jclass class;
+                            jfieldID sampLwm;
+                            jfieldID sampHwm;
+                            jfieldID sampCurr;
+                            jfieldID active;
+                            jfieldID canceled;
+                        } CompactStatus;
+                    } Kvdb;
+                    struct {
+                        struct {
+                            jclass class;
+                            jobject ABORTED;
+                            jobject ACTIVE;
+                            jobject COMMITTED;
+                            jobject INVALID;
+                        } State;
+                    } KvdbTransaction;
                     struct {
                         jclass class;
-                        jfieldID sampLwm;
-                        jfieldID sampHwm;
-                        jfieldID sampCurr;
-                        jfieldID active;
-                        jfieldID canceled;
-                    } CompactStatus;
-                } Kvdb;
-                struct {
-                    struct {
-                        jclass class;
-                        jobject ABORTED;
-                        jobject ACTIVE;
-                        jobject COMMITTED;
-                        jobject INVALID;
-                    } State;
-                } KvdbTransaction;
-                struct {
-                    jclass class;
-                    jfieldID allocatedBytes;
-                    jfieldID usedBytes;
-                    jfieldID path;
-                } MclassInfo;
-            } hse;
+                        jfieldID allocatedBytes;
+                        jfieldID usedBytes;
+                        jfieldID path;
+                    } MclassInfo;
+                } hse;
+            } hse_project;
         } micron;
     } com;
     struct {

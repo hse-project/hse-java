@@ -1,12 +1,12 @@
 c_sources = files(
-    'com_micron_hse_Hse.c',
-    'com_micron_hse_Kvdb.c',
-    'com_micron_hse_Kvdb_CompactStatus.c',
-    'com_micron_hse_KvdbTransaction.c',
-    'com_micron_hse_Kvs.c',
-    'com_micron_hse_KvsCursor.c',
-    'com_micron_hse_MclassInfo.c',
-    'com_micron_hse_Version.c',
+    'com_micron_hse_project_hse_Hse.c',
+    'com_micron_hse_project_hse_Kvdb.c',
+    'com_micron_hse_project_hse_Kvdb_CompactStatus.c',
+    'com_micron_hse_project_hse_KvdbTransaction.c',
+    'com_micron_hse_project_hse_Kvs.c',
+    'com_micron_hse_project_hse_KvsCursor.c',
+    'com_micron_hse_project_hse_MclassInfo.c',
+    'com_micron_hse_project_hse_Version.c',
     'hsejni.c'
 )
 

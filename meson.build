@@ -16,7 +16,7 @@ project(
     meson_version: '>= 0.62.0'
 )
 
-package = 'com.micron.hse'
+package = 'com.micron.hse_project.hse'
 
 version_components = meson.project_version().split('.')
 
@@ -33,7 +33,6 @@ cc = meson.get_compiler('c')
 javac = meson.get_compiler('java')
 
 mvn = find_program('mvn', required: get_option('tests'), disabler: true)
-
 python = find_program('python3', required: get_option('tests'))
 
 jni_dep = dependency('jni', version: '>=1.8.0')
