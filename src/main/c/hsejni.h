@@ -23,6 +23,7 @@ struct globals {
                         struct {
                             jclass class;
                             jobject NONE;
+                            jobject TXN_EXPIRED;
                         } Context;
                     } HseException;
                     struct {

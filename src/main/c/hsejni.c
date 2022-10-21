@@ -98,6 +98,8 @@ throw_new_hse_exception(JNIEnv *env, hse_err_t err)
         case HSE_ERR_CTX_NONE:
             context_obj = globals.com.micron.hse_project.hse.HseException.Context.NONE;
             break;
+        case HSE_ERR_CTX_TXN_EXPIRED:
+            context_obj = globals.com.micron.hse_project.hse.HseException.Context.TXN_EXPIRED;
     }
 
     assert(context_obj);
@@ -176,6 +178,19 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
         env, globals.com.micron.hse_project.hse.HseException.Context.class, none_field);
     ASSERT_NO_EXCEPTION();
     globals.com.micron.hse_project.hse.HseException.Context.NONE = (*env)->NewGlobalRef(env, local);
+    ERROR_IF_REF_IS_NULL();
+
+    const jfieldID txn_expired_field = (*env)->GetStaticFieldID(
+        env,
+        globals.com.micron.hse_project.hse.HseException.Context.class,
+        "TXN_EXPIRED",
+        "Lcom/micron/hse_project/hse/HseException$Context;");
+    ASSERT_NO_EXCEPTION();
+    local = (*env)->GetStaticObjectField(
+        env, globals.com.micron.hse_project.hse.HseException.Context.class, txn_expired_field);
+    ASSERT_NO_EXCEPTION();
+    globals.com.micron.hse_project.hse.HseException.Context.TXN_EXPIRED =
+        (*env)->NewGlobalRef(env, local);
     ERROR_IF_REF_IS_NULL();
 
     local = (*env)->FindClass(env, "com/micron/hse_project/hse/Kvdb$CompactStatus");
@@ -359,6 +374,8 @@ JNI_OnUnload(JavaVM *vm, void *reserved)
     (*env)->DeleteGlobalRef(env, globals.com.micron.hse_project.hse.HseException.class);
     (*env)->DeleteGlobalRef(env, globals.com.micron.hse_project.hse.HseException.Context.class);
     (*env)->DeleteGlobalRef(env, globals.com.micron.hse_project.hse.HseException.Context.NONE);
+    (*env)->DeleteGlobalRef(
+        env, globals.com.micron.hse_project.hse.HseException.Context.TXN_EXPIRED);
     (*env)->DeleteGlobalRef(env, globals.com.micron.hse_project.hse.Kvdb.CompactStatus.class);
     (*env)->DeleteGlobalRef(env, globals.com.micron.hse_project.hse.KvdbTransaction.State.class);
     (*env)->DeleteGlobalRef(env, globals.com.micron.hse_project.hse.KvdbTransaction.State.ABORTED);
