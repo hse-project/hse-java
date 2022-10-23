@@ -294,8 +294,8 @@ public final class Kvdb extends NativeObject implements AutoCloseable {
      *
      * @return Transaction.
      */
-    public KvdbTransaction transaction() {
-        return new KvdbTransaction(this);
+    public Transaction transaction() {
+        return new Transaction(this);
     }
 
     /** {@link Kvdb#compact(EnumSet)} flags. */

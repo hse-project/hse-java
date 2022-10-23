@@ -132,7 +132,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #cursor(byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #cursor(byte[], EnumSet, Transaction)}.
      *
      * <p>
      * {@code filter}, {@code flags}, and {@code txn} default to {@code null}.
@@ -146,7 +146,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #cursor(byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #cursor(byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} and {@code txn} default to {@code null}.</p>
      *
@@ -159,7 +159,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #cursor(byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #cursor(byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} and {@code txn} default to {@code null}.</p>
      *
@@ -172,7 +172,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #cursor(byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #cursor(byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} and {@code txn} default to {@code null}.</p>
      *
@@ -186,7 +186,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #cursor(byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #cursor(byte[], EnumSet, Transaction)}.
      *
      * <p>{@code filter} and {@code txn} default to {@code null}.</p>
      *
@@ -199,7 +199,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #cursor(byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #cursor(byte[], EnumSet, Transaction)}.
      *
      * <p>{@code filter} and {@code flags} default to {@code null}.</p>
      *
@@ -207,12 +207,12 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @return Cursor.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public KvsCursor cursor(final KvdbTransaction txn) throws HseException {
+    public KvsCursor cursor(final Transaction txn) throws HseException {
         return cursor((byte[]) null, null, txn);
     }
 
     /**
-     * Refer to {@link #cursor(byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #cursor(byte[], EnumSet, Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -227,7 +227,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #cursor(byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #cursor(byte[], EnumSet, Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -242,7 +242,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #cursor(byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #cursor(byte[], EnumSet, Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -258,7 +258,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #cursor(byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #cursor(byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} defaults to {@code null}.</p>
      *
@@ -267,12 +267,12 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @return Cursor.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public KvsCursor cursor(final byte[] filter, final KvdbTransaction txn) throws HseException {
+    public KvsCursor cursor(final byte[] filter, final Transaction txn) throws HseException {
         return cursor(filter, null, txn);
     }
 
     /**
-     * Refer to {@link #cursor(byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #cursor(byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} defaults to {@code null}.</p>
      *
@@ -281,12 +281,12 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @return Cursor.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public KvsCursor cursor(final String filter, final KvdbTransaction txn) throws HseException {
+    public KvsCursor cursor(final String filter, final Transaction txn) throws HseException {
         return cursor(filter, null, txn);
     }
 
     /**
-     * Refer to {@link #cursor(byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #cursor(byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} defaults to {@code null}.</p>
      *
@@ -296,13 +296,13 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public KvsCursor cursor(final ByteBuffer filter, final KvdbTransaction txn)
+    public KvsCursor cursor(final ByteBuffer filter, final Transaction txn)
             throws HseException {
         return cursor(filter, null, txn);
     }
 
     /**
-     * Refer to {@link #cursor(byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #cursor(byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} defaults to {@code null}.</p>
      *
@@ -311,7 +311,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @return Cursor.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public KvsCursor cursor(final EnumSet<CreateFlags> flags, final KvdbTransaction txn)
+    public KvsCursor cursor(final EnumSet<CreateFlags> flags, final Transaction txn)
             throws HseException {
         return cursor((byte[]) null, flags, txn);
     }
@@ -389,12 +389,12 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws HseException Underlying C function returned a non-zero value.
      */
     public KvsCursor cursor(final byte[] filter, final EnumSet<CreateFlags> flags,
-            final KvdbTransaction txn) throws HseException {
+            final Transaction txn) throws HseException {
         return new KvsCursor(this, filter, flags, txn);
     }
 
     /**
-     * Refer to {@link #cursor(byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #cursor(byte[], EnumSet, Transaction)}.
      *
      * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
@@ -406,12 +406,12 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public KvsCursor cursor(final String filter, final EnumSet<CreateFlags> flags,
-            final KvdbTransaction txn) throws HseException {
+            final Transaction txn) throws HseException {
         return new KvsCursor(this, filter, flags, txn);
     }
 
     /**
-     * Refer to {@link #cursor(byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #cursor(byte[], EnumSet, Transaction)}.
      *
      * <p>Any {@link ByteBuffer} arguments must be direct.</p>
      *
@@ -428,12 +428,12 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws HseException Underlying C function returned a non-zero value.
      */
     public KvsCursor cursor(final ByteBuffer filter, final EnumSet<CreateFlags> flags,
-            final KvdbTransaction txn) throws HseException {
+            final Transaction txn) throws HseException {
         return new KvsCursor(this, filter, flags, txn);
     }
 
     /**
-     * Refer to {@link #delete(byte[], KvdbTransaction)}.
+     * Refer to {@link #delete(byte[], Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -445,7 +445,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #delete(byte[], KvdbTransaction)}.
+     * Refer to {@link #delete(byte[], Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -457,7 +457,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #delete(byte[], KvdbTransaction)}.
+     * Refer to {@link #delete(byte[], Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -479,10 +479,10 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @param key Key to delete.
      * @param txn Transaction context.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see KvdbTransaction For information on how deletes within transactions
+     * @see Transaction For information on how deletes within transactions
      *      are handled.
      */
-    public void delete(final byte[] key, final KvdbTransaction txn) throws HseException {
+    public void delete(final byte[] key, final Transaction txn) throws HseException {
         final int keyLen = key == null ? 0 : key.length;
         final long txnHandle = txn == null ? 0 : txn.handle;
 
@@ -490,7 +490,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #delete(byte[], KvdbTransaction)}.
+     * Refer to {@link #delete(byte[], Transaction)}.
      *
      * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
@@ -499,14 +499,14 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws HseException Underlying C function returned a non-zero value.
      * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
-    public void delete(final String key, final KvdbTransaction txn) throws HseException {
+    public void delete(final String key, final Transaction txn) throws HseException {
         final long txnHandle = txn == null ? 0 : txn.handle;
 
         delete(this.handle, key, 0, txnHandle);
     }
 
     /**
-     * Refer to {@link #delete(byte[], KvdbTransaction)}.
+     * Refer to {@link #delete(byte[], Transaction)}.
      *
      * <p>Any {@link ByteBuffer} arguments must be direct.</p>
      *
@@ -520,7 +520,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public void delete(final ByteBuffer key, final KvdbTransaction txn) throws HseException {
+    public void delete(final ByteBuffer key, final Transaction txn) throws HseException {
         int keyLen = 0;
         int keyPos = 0;
         if (key != null) {
@@ -538,7 +538,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
+     * Refer to {@link #get(byte[], byte[], Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -548,11 +548,11 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws HseException Underlying C function returned a non-zero value.
      */
     public Optional<byte[]> get(final byte[] key) throws HseException {
-        return get(key, (KvdbTransaction) null);
+        return get(key, (Transaction) null);
     }
 
     /**
-     * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
+     * Refer to {@link #get(byte[], byte[], Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -562,11 +562,11 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws HseException Underlying C function returned a non-zero value.
      */
     public Optional<byte[]> get(final String key) throws HseException {
-        return get(key, (KvdbTransaction) null);
+        return get(key, (Transaction) null);
     }
 
     /**
-     * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
+     * Refer to {@link #get(byte[], byte[], Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -578,11 +578,11 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      */
     public Optional<byte[]> get(final ByteBuffer key)
             throws HseException {
-        return get(key, (KvdbTransaction) null);
+        return get(key, (Transaction) null);
     }
 
     /**
-     * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
+     * Refer to {@link #get(byte[], byte[], Transaction)}.
      *
      * @param key Key to get.
      * @param txn Transaction context.
@@ -590,7 +590,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      *      copied.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public Optional<byte[]> get(final byte[] key, final KvdbTransaction txn) throws HseException {
+    public Optional<byte[]> get(final byte[] key, final Transaction txn) throws HseException {
         final int keyLen = key == null ? 0 : key.length;
         final long txnHandle = txn == null ? 0 : txn.handle;
 
@@ -598,7 +598,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
+     * Refer to {@link #get(byte[], byte[], Transaction)}.
      *
      * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
@@ -609,14 +609,14 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws HseException Underlying C function returned a non-zero value.
      * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
-    public Optional<byte[]> get(final String key, final KvdbTransaction txn) throws HseException {
+    public Optional<byte[]> get(final String key, final Transaction txn) throws HseException {
         final long txnHandle = txn == null ? 0 : txn.handle;
 
         return Optional.ofNullable(get(this.handle, key, 0, txnHandle));
     }
 
     /**
-     * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
+     * Refer to {@link #get(byte[], byte[], Transaction)}.
      *
      * <p>Any {@link ByteBuffer} arguments must be direct.</p>
      *
@@ -632,7 +632,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public Optional<byte[]> get(final ByteBuffer key, final KvdbTransaction txn)
+    public Optional<byte[]> get(final ByteBuffer key, final Transaction txn)
             throws HseException {
         int keyLen = 0;
         int keyPos = 0;
@@ -654,7 +654,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
+     * Refer to {@link #get(byte[], byte[], Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -669,7 +669,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
+     * Refer to {@link #get(byte[], byte[], Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -684,7 +684,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
+     * Refer to {@link #get(byte[], byte[], Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -699,7 +699,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
+     * Refer to {@link #get(byte[], byte[], Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -716,7 +716,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
+     * Refer to {@link #get(byte[], byte[], Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -733,7 +733,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
+     * Refer to {@link #get(byte[], byte[], Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -762,7 +762,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @return Actual length of the value if {@code key} was found.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public Optional<Integer> get(final byte[] key, byte[] valueBuf, final KvdbTransaction txn)
+    public Optional<Integer> get(final byte[] key, byte[] valueBuf, final Transaction txn)
             throws HseException {
         final int keyLen = key == null ? 0 : key.length;
         final int valueBufSz = valueBuf == null ? 0 : valueBuf.length;
@@ -777,7 +777,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
+     * Refer to {@link #get(byte[], byte[], Transaction)}.
      *
      * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
@@ -789,7 +789,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws HseException Underlying C function returned a non-zero value.
      * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
-    public Optional<Integer> get(final String key, final byte[] valueBuf, final KvdbTransaction txn)
+    public Optional<Integer> get(final String key, final byte[] valueBuf, final Transaction txn)
             throws HseException {
         final int valueBufSz = valueBuf == null ? 0 : valueBuf.length;
         final long txnHandle = txn == null ? 0 : txn.handle;
@@ -803,7 +803,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
+     * Refer to {@link #get(byte[], byte[], Transaction)}.
      *
      * <p>Any {@link ByteBuffer} arguments must be direct.</p>
      *
@@ -821,7 +821,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws HseException Underlying C function returned a non-zero value.
      */
     public Optional<Integer> get(final ByteBuffer key, final byte[] valueBuf,
-            final KvdbTransaction txn) throws HseException {
+            final Transaction txn) throws HseException {
         int keyLen = 0;
         int keyPos = 0;
         if (key != null) {
@@ -849,7 +849,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
+     * Refer to {@link #get(byte[], byte[], Transaction)}.
      *
      * <p>Any {@link ByteBuffer} arguments must be direct.</p>
      *
@@ -869,7 +869,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      */
 
     public Optional<Integer> get(final byte[] key, final ByteBuffer valueBuf,
-            final KvdbTransaction txn) throws HseException {
+            final Transaction txn) throws HseException {
         final int keyLen = key == null ? 0 : key.length;
 
         int valueBufSz = 0;
@@ -901,7 +901,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
+     * Refer to {@link #get(byte[], byte[], Transaction)}.
      *
      * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
@@ -916,7 +916,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public Optional<Integer> get(final String key, final ByteBuffer valueBuf,
-            final KvdbTransaction txn) throws HseException {
+            final Transaction txn) throws HseException {
         int valueBufSz = 0;
         int valueBufPos = 0;
         if (valueBuf != null) {
@@ -946,7 +946,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #get(byte[], byte[], KvdbTransaction)}.
+     * Refer to {@link #get(byte[], byte[], Transaction)}.
      *
      * <p>Any {@link ByteBuffer} arguments must be direct.</p>
      *
@@ -965,7 +965,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws HseException Underlying C function returned a non-zero value.
      */
     public Optional<Integer> get(final ByteBuffer key, final ByteBuffer valueBuf,
-            final KvdbTransaction txn) throws HseException {
+            final Transaction txn) throws HseException {
         int keyLen = 0;
         int keyPos = 0;
         if (key != null) {
@@ -1031,7 +1031,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #prefixDelete(byte[], KvdbTransaction)}.
+     * Refer to {@link #prefixDelete(byte[], Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -1043,7 +1043,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #prefixDelete(byte[], KvdbTransaction)}.
+     * Refer to {@link #prefixDelete(byte[], Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -1055,7 +1055,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #prefixDelete(byte[], KvdbTransaction)}.
+     * Refer to {@link #prefixDelete(byte[], Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -1076,16 +1076,16 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * this the caller passes a filter with a length equal to the KVSs key
      * prefix length. It is not an error if no keys exist matching the filter.
      * If there is a filtered iteration in progress, then that iteration can
-     * fail if {@link #prefixDelete(byte[], KvdbTransaction)} is called with a
+     * fail if {@link #prefixDelete(byte[], Transaction)} is called with a
      * filter matching the iteration.
      * </p>
      *
      * <p>
-     * If {@link #prefixDelete(byte[], KvdbTransaction)} is called from a
+     * If {@link #prefixDelete(byte[], Transaction)} is called from a
      * transaction context, it affects no key-value mutations that are part of
      * the same transaction. Stated differently, for KVS commands issued within
      * a transaction, all calls to
-     * {@link #prefixDelete(byte[], KvdbTransaction)} are treated as though they
+     * {@link #prefixDelete(byte[], Transaction)} are treated as though they
      * were issued serially at the beginning of the transaction regardless of
      * the actual order these commands appeared in.
      * </p>
@@ -1096,7 +1096,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @param txn Transaction context.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public void prefixDelete(final byte[] pfx, final KvdbTransaction txn) throws HseException {
+    public void prefixDelete(final byte[] pfx, final Transaction txn) throws HseException {
         final int pfxLen = pfx == null ? 0 : pfx.length;
         final long txnHandle = txn == null ? 0 : txn.handle;
 
@@ -1104,7 +1104,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #prefixDelete(byte[], KvdbTransaction)}.
+     * Refer to {@link #prefixDelete(byte[], Transaction)}.
      *
      * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
@@ -1113,14 +1113,14 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws HseException Underlying C function returned a non-zero value.
      * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
-    public void prefixDelete(final String pfx, final KvdbTransaction txn) throws HseException {
+    public void prefixDelete(final String pfx, final Transaction txn) throws HseException {
         final long txnHandle = txn == null ? 0 : txn.handle;
 
         prefixDelete(this.handle, pfx, 0, txnHandle);
     }
 
     /**
-     * Refer to {@link #prefixDelete(byte[], KvdbTransaction)}.
+     * Refer to {@link #prefixDelete(byte[], Transaction)}.
      *
      * <p>Any {@link ByteBuffer} arguments must be direct.</p>
      *
@@ -1134,7 +1134,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public void prefixDelete(final ByteBuffer pfx, final KvdbTransaction txn) throws HseException {
+    public void prefixDelete(final ByteBuffer pfx, final Transaction txn) throws HseException {
         int pfxLen = 0;
         int pfxPos = 0;
         if (pfx != null) {
@@ -1152,7 +1152,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} and {@code txn} default to {@code null}.</p>
      *
@@ -1165,7 +1165,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} and {@code txn} default to {@code null}.</p>
      *
@@ -1178,7 +1178,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} and {@code txn} default to {@code null}.</p>
      *
@@ -1192,7 +1192,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} and {@code txn} default to {@code null}.</p>
      *
@@ -1205,7 +1205,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} and {@code txn} default to {@code null}.</p>
      *
@@ -1218,7 +1218,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} and {@code txn} default to {@code null}.</p>
      *
@@ -1232,7 +1232,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} and {@code txn} default to {@code null}.</p>
      *
@@ -1246,7 +1246,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} and {@code txn} default to {@code null}.</p>
      *
@@ -1260,7 +1260,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} and {@code txn} default to {@code null}.</p>
      *
@@ -1274,7 +1274,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -1289,7 +1289,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -1304,7 +1304,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -1320,7 +1320,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -1335,7 +1335,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -1350,7 +1350,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -1366,7 +1366,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -1382,7 +1382,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -1398,7 +1398,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code txn} defaults to {@code null}.</p>
      *
@@ -1414,7 +1414,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} defaults to {@code null}.</p>
      *
@@ -1423,13 +1423,13 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @param txn Transaction context.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public void put(final byte[] key, final byte[] value, final KvdbTransaction txn)
+    public void put(final byte[] key, final byte[] value, final Transaction txn)
             throws HseException {
         put(key, value, null, txn);
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} defaults to {@code null}.</p>
      *
@@ -1438,13 +1438,13 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @param txn Transaction context.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public void put(final byte[] key, final String value, final KvdbTransaction txn)
+    public void put(final byte[] key, final String value, final Transaction txn)
             throws HseException {
         put(key, value, null, txn);
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} defaults to {@code null}.</p>
      *
@@ -1454,13 +1454,13 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public void put(final byte[] key, final ByteBuffer value, final KvdbTransaction txn)
+    public void put(final byte[] key, final ByteBuffer value, final Transaction txn)
             throws HseException {
         put(key, value, null, txn);
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} defaults to {@code null}.</p>
      *
@@ -1470,13 +1470,13 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public void put(final String key, final byte[] value, final KvdbTransaction txn)
+    public void put(final String key, final byte[] value, final Transaction txn)
             throws HseException {
         put(key, value, null, txn);
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} defaults to {@code null}.</p>
      *
@@ -1485,29 +1485,13 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @param txn Transaction context.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public void put(final String key, final String value, final KvdbTransaction txn)
+    public void put(final String key, final String value, final Transaction txn)
             throws HseException {
         put(key, value, null, txn);
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
-     *
-     * <p>{@code flags} defaults to {@code null}.</p>
-     *
-     * @param key Key to put into the KVS.
-     * @param value Value associated with {@code key}.
-     * @param txn Transaction context.
-     * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
-     * @throws HseException Underlying C function returned a non-zero value.
-     */
-    public void put(final String key, final ByteBuffer value, final KvdbTransaction txn)
-            throws HseException {
-        put(key, value, null, txn);
-    }
-
-    /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} defaults to {@code null}.</p>
      *
@@ -1517,13 +1501,13 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public void put(final ByteBuffer key, final byte[] value, final KvdbTransaction txn)
+    public void put(final String key, final ByteBuffer value, final Transaction txn)
             throws HseException {
         put(key, value, null, txn);
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} defaults to {@code null}.</p>
      *
@@ -1533,13 +1517,13 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public void put(final ByteBuffer key, final String value, final KvdbTransaction txn)
+    public void put(final ByteBuffer key, final byte[] value, final Transaction txn)
             throws HseException {
         put(key, value, null, txn);
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>{@code flags} defaults to {@code null}.</p>
      *
@@ -1549,7 +1533,23 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
      * @throws HseException Underlying C function returned a non-zero value.
      */
-    public void put(final ByteBuffer key, final ByteBuffer value, final KvdbTransaction txn)
+    public void put(final ByteBuffer key, final String value, final Transaction txn)
+            throws HseException {
+        put(key, value, null, txn);
+    }
+
+    /**
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
+     *
+     * <p>{@code flags} defaults to {@code null}.</p>
+     *
+     * @param key Key to put into the KVS.
+     * @param value Value associated with {@code key}.
+     * @param txn Transaction context.
+     * @throws AssertionError All {@link ByteBuffer} parameters must be direct.
+     * @throws HseException Underlying C function returned a non-zero value.
+     */
+    public void put(final ByteBuffer key, final ByteBuffer value, final Transaction txn)
             throws HseException {
         put(key, value, null, txn);
     }
@@ -1568,7 +1568,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * path. For some kinds of data (e.g., control metadata) the client may wish
      * to not experience that delay. For relatively low data rate uses, the
      * caller can set the {@link PutFlags#PRIO} flag for an
-     * {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}. Care should be
+     * {@link #put(byte[], byte[], EnumSet, Transaction)}. Care should be
      * taken when doing so to ensure that the system does not become overrun. As
      * a rough approximation, doing 1M priority puts per second marked as PRIO
      * is likely an issue. On the other hand, doing 1K small puts per second
@@ -1577,14 +1577,14 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      *
      * <p>
      * If compression is on by default for the given kvs, then
-     * {@link #put(byte[], byte[], EnumSet, KvdbTransaction)} will attempt to
+     * {@link #put(byte[], byte[], EnumSet, Transaction)} will attempt to
      * compress the value unless the {@link PutFlags#VCOMP_OFF} flag is given.
      * Otherwise, the {@link PutFlags#VCOMP_OFF} flag is ignored.
      * </p>
      *
      * <p>
      * If compression is off by default for the given kvs, then
-     * {@link #put(byte[], byte[], EnumSet, KvdbTransaction)} will not attempt
+     * {@link #put(byte[], byte[], EnumSet, Transaction)} will not attempt
      * to compress a value unless the {@link PutFlags#VCOMP_ON} flag is given.
      * Otherwise, the {@link PutFlags#VCOMP_ON} flag is ignored.
      * </p>
@@ -1596,11 +1596,11 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @param flags Flags for operation specialization.
      * @param txn Transaction context.
      * @throws HseException Underlying C function returned a non-zero value.
-     * @see KvdbTransaction For information on how puts within transactions are
+     * @see Transaction For information on how puts within transactions are
      *      handled.
      */
     public void put(final byte[] key, final byte[] value, final EnumSet<PutFlags> flags,
-            final KvdbTransaction txn) throws HseException {
+            final Transaction txn) throws HseException {
         final int keyLen = key == null ? 0 : key.length;
         final int valueLen = value == null ? 0 : value.length;
 
@@ -1613,7 +1613,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
@@ -1625,7 +1625,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public void put(final byte[] key, final String value, final EnumSet<PutFlags> flags,
-            final KvdbTransaction txn) throws HseException {
+            final Transaction txn) throws HseException {
         final int keyLen = key == null ? 0 : key.length;
 
         final int flagsValue = flags == null ? 0 : flags.stream()
@@ -1637,7 +1637,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>Any {@link ByteBuffer} arguments must be direct.</p>
      *
@@ -1654,7 +1654,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws HseException Underlying C function returned a non-zero value.
      */
     public void put(final byte[] key, final ByteBuffer value, final EnumSet<PutFlags> flags,
-            final KvdbTransaction txn) throws HseException {
+            final Transaction txn) throws HseException {
         final int keyLen = key == null ? 0 : key.length;
 
         int valueLen = 0;
@@ -1678,7 +1678,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
@@ -1690,7 +1690,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public void put(final String key, final byte[] value, final EnumSet<PutFlags> flags,
-            final KvdbTransaction txn) throws HseException {
+            final Transaction txn) throws HseException {
         final int valueLen = value == null ? 0 : value.length;
 
         final int flagsValue = flags == null ? 0 : flags.stream()
@@ -1702,7 +1702,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
@@ -1714,7 +1714,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public void put(final String key, final String value, final EnumSet<PutFlags> flags,
-            final KvdbTransaction txn) throws HseException {
+            final Transaction txn) throws HseException {
         final int flagsValue = flags == null ? 0 : flags.stream()
             .mapToInt(flag -> 1 << flag.ordinal())
             .sum();
@@ -1724,7 +1724,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
@@ -1736,7 +1736,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public void put(final String key, final ByteBuffer value, final EnumSet<PutFlags> flags,
-            final KvdbTransaction txn) throws HseException {
+            final Transaction txn) throws HseException {
         int valueLen = 0;
         int valuePos = 0;
         if (value != null) {
@@ -1757,7 +1757,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>Any {@link ByteBuffer} arguments must be direct.</p>
      *
@@ -1774,7 +1774,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws HseException Underlying C function returned a non-zero value.
      */
     public void put(final ByteBuffer key, final byte[] value,
-            final EnumSet<PutFlags> flags, final KvdbTransaction txn) throws HseException {
+            final EnumSet<PutFlags> flags, final Transaction txn) throws HseException {
         int keyLen = 0;
         int keyPos = 0;
         if (key != null) {
@@ -1796,7 +1796,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>Any {@link String} arguments are converted to modified UTF-8.</p>
      *
@@ -1816,7 +1816,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8">Modified UTF-8</a>
      */
     public void put(final ByteBuffer key, final String value,
-            final EnumSet<PutFlags> flags, final KvdbTransaction txn) throws HseException {
+            final EnumSet<PutFlags> flags, final Transaction txn) throws HseException {
         int keyLen = 0;
         int keyPos = 0;
         if (key != null) {
@@ -1837,7 +1837,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * Refer to {@link #put(byte[], byte[], EnumSet, KvdbTransaction)}.
+     * Refer to {@link #put(byte[], byte[], EnumSet, Transaction)}.
      *
      * <p>Any {@link ByteBuffer} arguments must be direct.</p>
      *
@@ -1854,7 +1854,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
      * @throws HseException Underlying C function returned a non-zero value.
      */
     public void put(final ByteBuffer key, final ByteBuffer value,
-            final EnumSet<PutFlags> flags, final KvdbTransaction txn) throws HseException {
+            final EnumSet<PutFlags> flags, final Transaction txn) throws HseException {
         int keyLen = 0;
         int keyPos = 0;
         if (key != null) {
@@ -1887,7 +1887,7 @@ public final class Kvs extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * {@link Kvs#put(byte[], byte[], EnumSet, KvdbTransaction)} (et al.) flags.
+     * {@link Kvs#put(byte[], byte[], EnumSet, Transaction)} (et al.) flags.
      */
     public enum PutFlags {
         /** Operation will not be throttled. */

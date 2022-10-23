@@ -213,64 +213,64 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
         env, globals.com.micron.hse_project.hse.Kvdb.CompactStatus.class, "canceled", "Z");
     ASSERT_NO_EXCEPTION();
 
-    local = (*env)->FindClass(env, "com/micron/hse_project/hse/KvdbTransaction$State");
+    local = (*env)->FindClass(env, "com/micron/hse_project/hse/Transaction$State");
     ASSERT_NO_EXCEPTION();
-    globals.com.micron.hse_project.hse.KvdbTransaction.State.class =
+    globals.com.micron.hse_project.hse.Transaction.State.class =
         (*env)->NewGlobalRef(env, local);
     ERROR_IF_REF_IS_NULL();
 
     const jfieldID aborted_field = (*env)->GetStaticFieldID(
         env,
-        globals.com.micron.hse_project.hse.KvdbTransaction.State.class,
+        globals.com.micron.hse_project.hse.Transaction.State.class,
         "ABORTED",
-        "Lcom/micron/hse_project/hse/KvdbTransaction$State;");
+        "Lcom/micron/hse_project/hse/Transaction$State;");
     ASSERT_NO_EXCEPTION();
     local = (*env)->GetStaticObjectField(
-        env, globals.com.micron.hse_project.hse.KvdbTransaction.State.class, aborted_field);
+        env, globals.com.micron.hse_project.hse.Transaction.State.class, aborted_field);
     ASSERT_NO_EXCEPTION();
-    globals.com.micron.hse_project.hse.KvdbTransaction.State.ABORTED =
+    globals.com.micron.hse_project.hse.Transaction.State.ABORTED =
         (*env)->NewGlobalRef(env, local);
     ;
     ERROR_IF_REF_IS_NULL();
 
     const jfieldID active_field = (*env)->GetStaticFieldID(
         env,
-        globals.com.micron.hse_project.hse.KvdbTransaction.State.class,
+        globals.com.micron.hse_project.hse.Transaction.State.class,
         "ACTIVE",
-        "Lcom/micron/hse_project/hse/KvdbTransaction$State;");
+        "Lcom/micron/hse_project/hse/Transaction$State;");
     ASSERT_NO_EXCEPTION();
     local = (*env)->GetStaticObjectField(
-        env, globals.com.micron.hse_project.hse.KvdbTransaction.State.class, active_field);
+        env, globals.com.micron.hse_project.hse.Transaction.State.class, active_field);
     ASSERT_NO_EXCEPTION();
-    globals.com.micron.hse_project.hse.KvdbTransaction.State.ACTIVE =
+    globals.com.micron.hse_project.hse.Transaction.State.ACTIVE =
         (*env)->NewGlobalRef(env, local);
     ;
     ERROR_IF_REF_IS_NULL();
 
     const jfieldID committed_field = (*env)->GetStaticFieldID(
         env,
-        globals.com.micron.hse_project.hse.KvdbTransaction.State.class,
+        globals.com.micron.hse_project.hse.Transaction.State.class,
         "COMMITTED",
-        "Lcom/micron/hse_project/hse/KvdbTransaction$State;");
+        "Lcom/micron/hse_project/hse/Transaction$State;");
     ASSERT_NO_EXCEPTION();
     local = (*env)->GetStaticObjectField(
-        env, globals.com.micron.hse_project.hse.KvdbTransaction.State.class, committed_field);
+        env, globals.com.micron.hse_project.hse.Transaction.State.class, committed_field);
     ASSERT_NO_EXCEPTION();
-    globals.com.micron.hse_project.hse.KvdbTransaction.State.COMMITTED =
+    globals.com.micron.hse_project.hse.Transaction.State.COMMITTED =
         (*env)->NewGlobalRef(env, local);
     ;
     ERROR_IF_REF_IS_NULL();
 
     const jfieldID invalid_field = (*env)->GetStaticFieldID(
         env,
-        globals.com.micron.hse_project.hse.KvdbTransaction.State.class,
+        globals.com.micron.hse_project.hse.Transaction.State.class,
         "INVALID",
-        "Lcom/micron/hse_project/hse/KvdbTransaction$State;");
+        "Lcom/micron/hse_project/hse/Transaction$State;");
     ASSERT_NO_EXCEPTION();
     local = (*env)->GetStaticObjectField(
-        env, globals.com.micron.hse_project.hse.KvdbTransaction.State.class, invalid_field);
+        env, globals.com.micron.hse_project.hse.Transaction.State.class, invalid_field);
     ASSERT_NO_EXCEPTION();
-    globals.com.micron.hse_project.hse.KvdbTransaction.State.INVALID =
+    globals.com.micron.hse_project.hse.Transaction.State.INVALID =
         (*env)->NewGlobalRef(env, local);
     ;
     ERROR_IF_REF_IS_NULL();
@@ -377,12 +377,12 @@ JNI_OnUnload(JavaVM *vm, void *reserved)
     (*env)->DeleteGlobalRef(
         env, globals.com.micron.hse_project.hse.HseException.Context.TXN_EXPIRED);
     (*env)->DeleteGlobalRef(env, globals.com.micron.hse_project.hse.Kvdb.CompactStatus.class);
-    (*env)->DeleteGlobalRef(env, globals.com.micron.hse_project.hse.KvdbTransaction.State.class);
-    (*env)->DeleteGlobalRef(env, globals.com.micron.hse_project.hse.KvdbTransaction.State.ABORTED);
-    (*env)->DeleteGlobalRef(env, globals.com.micron.hse_project.hse.KvdbTransaction.State.ACTIVE);
+    (*env)->DeleteGlobalRef(env, globals.com.micron.hse_project.hse.Transaction.State.class);
+    (*env)->DeleteGlobalRef(env, globals.com.micron.hse_project.hse.Transaction.State.ABORTED);
+    (*env)->DeleteGlobalRef(env, globals.com.micron.hse_project.hse.Transaction.State.ACTIVE);
     (*env)->DeleteGlobalRef(
-        env, globals.com.micron.hse_project.hse.KvdbTransaction.State.COMMITTED);
-    (*env)->DeleteGlobalRef(env, globals.com.micron.hse_project.hse.KvdbTransaction.State.INVALID);
+        env, globals.com.micron.hse_project.hse.Transaction.State.COMMITTED);
+    (*env)->DeleteGlobalRef(env, globals.com.micron.hse_project.hse.Transaction.State.INVALID);
     (*env)->DeleteGlobalRef(env, globals.com.micron.hse_project.hse.MclassInfo.class);
     (*env)->DeleteGlobalRef(env, globals.java.io.EOFException.class);
     (*env)->DeleteGlobalRef(env, globals.java.lang.Integer.class);

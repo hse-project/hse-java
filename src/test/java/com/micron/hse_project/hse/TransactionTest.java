@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.micron.hse_project.hse.KvdbTransaction.State;
+import com.micron.hse_project.hse.Transaction.State;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,7 +35,7 @@ public final class TransactionTest {
 
     @Test
     public void stateTransitions() throws HseException {
-        final KvdbTransaction txn = kvdb.transaction();
+        final Transaction txn = kvdb.transaction();
 
         assertEquals(txn.getState(), State.INVALID);
         txn.begin();
@@ -53,7 +53,7 @@ public final class TransactionTest {
     public void autoClose() throws HseException {
         assertFalse(kvs.get("hello").isPresent());
 
-        try (KvdbTransaction txn = kvdb.transaction()) {
+        try (Transaction txn = kvdb.transaction()) {
             txn.begin();
 
             kvs.put("hello", "world", txn);
@@ -62,7 +62,7 @@ public final class TransactionTest {
         assertTrue(kvs.get("hello").isPresent());
         assertFalse(kvs.get("world").isPresent());
 
-        try (KvdbTransaction txn = kvdb.transaction()) {
+        try (Transaction txn = kvdb.transaction()) {
             txn.begin();
 
             kvs.put("world", "hello", txn);

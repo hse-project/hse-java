@@ -71,11 +71,11 @@ package com.micron.hse_project.hse;
  * transaction.
  * </p>
  */
-public final class KvdbTransaction extends NativeObject implements AutoCloseable {
+public final class Transaction extends NativeObject implements AutoCloseable {
     /** KVDB the transaction is associated with. */
     private final Kvdb kvdb;
 
-    KvdbTransaction(final Kvdb kvdb) {
+    Transaction(final Kvdb kvdb) {
         this.kvdb = kvdb;
         this.handle = alloc(kvdb.handle);
     }

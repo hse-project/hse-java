@@ -44,7 +44,7 @@ struct globals {
                             jobject COMMITTED;
                             jobject INVALID;
                         } State;
-                    } KvdbTransaction;
+                    } Transaction;
                     struct {
                         jclass class;
                         jfieldID allocatedBytes;

@@ -16,7 +16,7 @@ import java.util.AbstractMap.SimpleImmutableEntry;
  * <a href="https://hse-project.github.io.">https://hse-project.github.io</a>.
  */
 public final class KvsCursor extends NativeObject implements AutoCloseable {
-    KvsCursor(final Kvs kvs, byte[] filter, EnumSet<CreateFlags> flags, final KvdbTransaction txn)
+    KvsCursor(final Kvs kvs, byte[] filter, EnumSet<CreateFlags> flags, final Transaction txn)
             throws HseException {
         final int filterLen = filter == null ? 0 : filter.length;
         final long txnHandle = txn == null ? 0 : txn.handle;
@@ -28,7 +28,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     }
 
     KvsCursor(final Kvs kvs, final String filter, EnumSet<CreateFlags> flags,
-            final KvdbTransaction txn) throws HseException {
+            final Transaction txn) throws HseException {
         final long txnHandle = txn == null ? 0 : txn.handle;
         final int flagsValue = flags == null ? 0 : flags.stream()
             .mapToInt(flag -> 1 << flag.ordinal())
@@ -38,7 +38,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     }
 
     KvsCursor(final Kvs kvs, final ByteBuffer filter, EnumSet<CreateFlags> flags,
-            final KvdbTransaction txn) throws HseException {
+            final Transaction txn) throws HseException {
         int filterLen = 0;
         int filterPos = 0;
         if (filter != null) {
@@ -1757,7 +1757,7 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     }
 
     /**
-     * {@link Kvs#cursor(byte[], EnumSet, KvdbTransaction)} (et al.) flags.
+     * {@link Kvs#cursor(byte[], EnumSet, Transaction)} (et al.) flags.
      */
     public enum CreateFlags {
         /** Iterate in reverse lexicographical order. */

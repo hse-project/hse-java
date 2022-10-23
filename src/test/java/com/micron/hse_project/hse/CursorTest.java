@@ -59,7 +59,7 @@ public final class CursorTest {
         TestUtils.tearDownKvs(kvdb, txnKvs);
     }
 
-    public static void addData(final Kvs store, final KvdbTransaction txn) throws HseException {
+    public static void addData(final Kvs store, final Transaction txn) throws HseException {
         for (int i = 0; i < NUM_ENTRIES; i++) {
             final String key = String.format("key%d", i);
             final String value = String.format("value%d", i);
@@ -224,7 +224,7 @@ public final class CursorTest {
 
         pfxBuffer.position(0);
 
-        try (KvdbTransaction txn = kvdb.transaction()) {
+        try (Transaction txn = kvdb.transaction()) {
             txn.begin();
 
             for (int i = 0; i < entries; i++) {

@@ -28,7 +28,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_create__J_3BIIJ(
 
     struct hse_kvs_cursor *cursor = NULL;
     struct hse_kvs        *kvs = (struct hse_kvs *)kvs_handle;
-    struct hse_kvdb_txn   *txn = (struct hse_kvdb_txn *)txn_handle;
+    struct hse_txn   *txn = (struct hse_txn *)txn_handle;
 
     jbyte *filter_data = filter ? (*env)->GetByteArrayElements(env, filter, NULL) : NULL;
 
@@ -56,7 +56,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_create__JLjava_lang_String_2IJ(
 
     struct hse_kvs_cursor *cursor = NULL;
     struct hse_kvs        *kvs = (struct hse_kvs *)kvs_handle;
-    struct hse_kvdb_txn   *txn = (struct hse_kvdb_txn *)txn_handle;
+    struct hse_txn   *txn = (struct hse_txn *)txn_handle;
 
     const char *filter_data = NULL;
     jsize       filter_len = 0;
@@ -91,7 +91,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_create__JLjava_nio_ByteBuffer_2IIIJ(
 
     struct hse_kvs_cursor *cursor;
     struct hse_kvs        *kvs = (struct hse_kvs *)kvs_handle;
-    struct hse_kvdb_txn   *txn = (struct hse_kvdb_txn *)txn_handle;
+    struct hse_txn   *txn = (struct hse_txn *)txn_handle;
 
     const void *filter_data = NULL;
     if (filter) {
