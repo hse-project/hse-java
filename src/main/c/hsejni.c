@@ -13,12 +13,14 @@
 
 #define HSE_JNI_VERSION JNI_VERSION_1_8
 
+static_assert(sizeof(jbyte) == sizeof(char), "Assumption is made throughout the code");
+
 struct globals globals;
 
 void
 to_paramv(JNIEnv *env, jobjectArray params, jsize *paramc, const char ***paramv)
 {
-    jsize        tmp_pc;
+    jsize tmp_pc;
     const char **tmp_pv = NULL;
 
     assert(env);
@@ -72,11 +74,19 @@ free_paramv(JNIEnv *env, jobjectArray params, jsize paramc, const char **paramv)
 jint
 throw_new_hse_exception(JNIEnv *env, hse_err_t err)
 {
+    jint rc;
+    char *buf;
+    jstring message;
+    size_t needed_sz;
+    enum hse_err_ctx ctx;
+    jobject hse_exception_obj;
+    jobject context_obj = NULL;
+
     assert(env);
     assert(err);
 
-    const size_t needed_sz = hse_strerror(err, NULL, 0);
-    char        *buf = malloc(needed_sz + 1);
+    needed_sz = hse_strerror(err, NULL, 0);
+    buf = malloc((needed_sz + 1) * sizeof(*buf));
     if (!buf)
         return (*env)->ThrowNew(
             env,
@@ -85,15 +95,14 @@ throw_new_hse_exception(JNIEnv *env, hse_err_t err)
 
     hse_strerror(err, buf, needed_sz + 1);
 
-    const jstring message = (*env)->NewStringUTF(env, buf);
+    message = (*env)->NewStringUTF(env, buf);
     free(buf);
     if ((*env)->ExceptionCheck(env))
         return JNI_ERR;
 
-    const jint             rc = hse_err_to_errno(err);
-    const enum hse_err_ctx ctx = hse_err_to_ctx(err);
+    rc = hse_err_to_errno(err);
+    ctx = hse_err_to_ctx(err);
 
-    jobject context_obj = NULL;
     switch (ctx) {
         case HSE_ERR_CTX_NONE:
             context_obj = globals.com.micron.hse_project.hse.HseException.Context.NONE;
@@ -104,7 +113,7 @@ throw_new_hse_exception(JNIEnv *env, hse_err_t err)
 
     assert(context_obj);
 
-    const jobject hse_exception_obj = (*env)->NewObject(
+    hse_exception_obj = (*env)->NewObject(
         env,
         globals.com.micron.hse_project.hse.HseException.class,
         globals.com.micron.hse_project.hse.HseException.init,
@@ -141,11 +150,12 @@ throw_new_hse_exception(JNIEnv *env, hse_err_t err)
 jint
 JNI_OnLoad(JavaVM *vm, void *reserved)
 {
-    (void)reserved;
-
-    jint    rc;
+    jint rc;
+    void *local;
     JNIEnv *env;
-    void   *local;
+    jfieldID field;
+
+    (void)reserved;
 
     rc = (*vm)->GetEnv(vm, (void **)&env, HSE_JNI_VERSION);
     if (rc)
@@ -168,26 +178,26 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
         (*env)->NewGlobalRef(env, local);
     ERROR_IF_REF_IS_NULL();
 
-    const jfieldID none_field = (*env)->GetStaticFieldID(
+    field = (*env)->GetStaticFieldID(
         env,
         globals.com.micron.hse_project.hse.HseException.Context.class,
         "NONE",
         "Lcom/micron/hse_project/hse/HseException$Context;");
     ASSERT_NO_EXCEPTION();
     local = (*env)->GetStaticObjectField(
-        env, globals.com.micron.hse_project.hse.HseException.Context.class, none_field);
+        env, globals.com.micron.hse_project.hse.HseException.Context.class, field);
     ASSERT_NO_EXCEPTION();
     globals.com.micron.hse_project.hse.HseException.Context.NONE = (*env)->NewGlobalRef(env, local);
     ERROR_IF_REF_IS_NULL();
 
-    const jfieldID txn_expired_field = (*env)->GetStaticFieldID(
+    field = (*env)->GetStaticFieldID(
         env,
         globals.com.micron.hse_project.hse.HseException.Context.class,
         "TXN_EXPIRED",
         "Lcom/micron/hse_project/hse/HseException$Context;");
     ASSERT_NO_EXCEPTION();
     local = (*env)->GetStaticObjectField(
-        env, globals.com.micron.hse_project.hse.HseException.Context.class, txn_expired_field);
+        env, globals.com.micron.hse_project.hse.HseException.Context.class, field);
     ASSERT_NO_EXCEPTION();
     globals.com.micron.hse_project.hse.HseException.Context.TXN_EXPIRED =
         (*env)->NewGlobalRef(env, local);
@@ -219,56 +229,56 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
         (*env)->NewGlobalRef(env, local);
     ERROR_IF_REF_IS_NULL();
 
-    const jfieldID aborted_field = (*env)->GetStaticFieldID(
+    field = (*env)->GetStaticFieldID(
         env,
         globals.com.micron.hse_project.hse.KvdbTransaction.State.class,
         "ABORTED",
         "Lcom/micron/hse_project/hse/KvdbTransaction$State;");
     ASSERT_NO_EXCEPTION();
     local = (*env)->GetStaticObjectField(
-        env, globals.com.micron.hse_project.hse.KvdbTransaction.State.class, aborted_field);
+        env, globals.com.micron.hse_project.hse.KvdbTransaction.State.class, field);
     ASSERT_NO_EXCEPTION();
     globals.com.micron.hse_project.hse.KvdbTransaction.State.ABORTED =
         (*env)->NewGlobalRef(env, local);
     ;
     ERROR_IF_REF_IS_NULL();
 
-    const jfieldID active_field = (*env)->GetStaticFieldID(
+    field = (*env)->GetStaticFieldID(
         env,
         globals.com.micron.hse_project.hse.KvdbTransaction.State.class,
         "ACTIVE",
         "Lcom/micron/hse_project/hse/KvdbTransaction$State;");
     ASSERT_NO_EXCEPTION();
     local = (*env)->GetStaticObjectField(
-        env, globals.com.micron.hse_project.hse.KvdbTransaction.State.class, active_field);
+        env, globals.com.micron.hse_project.hse.KvdbTransaction.State.class, field);
     ASSERT_NO_EXCEPTION();
     globals.com.micron.hse_project.hse.KvdbTransaction.State.ACTIVE =
         (*env)->NewGlobalRef(env, local);
     ;
     ERROR_IF_REF_IS_NULL();
 
-    const jfieldID committed_field = (*env)->GetStaticFieldID(
+    field = (*env)->GetStaticFieldID(
         env,
         globals.com.micron.hse_project.hse.KvdbTransaction.State.class,
         "COMMITTED",
         "Lcom/micron/hse_project/hse/KvdbTransaction$State;");
     ASSERT_NO_EXCEPTION();
     local = (*env)->GetStaticObjectField(
-        env, globals.com.micron.hse_project.hse.KvdbTransaction.State.class, committed_field);
+        env, globals.com.micron.hse_project.hse.KvdbTransaction.State.class, field);
     ASSERT_NO_EXCEPTION();
     globals.com.micron.hse_project.hse.KvdbTransaction.State.COMMITTED =
         (*env)->NewGlobalRef(env, local);
     ;
     ERROR_IF_REF_IS_NULL();
 
-    const jfieldID invalid_field = (*env)->GetStaticFieldID(
+    field = (*env)->GetStaticFieldID(
         env,
         globals.com.micron.hse_project.hse.KvdbTransaction.State.class,
         "INVALID",
         "Lcom/micron/hse_project/hse/KvdbTransaction$State;");
     ASSERT_NO_EXCEPTION();
     local = (*env)->GetStaticObjectField(
-        env, globals.com.micron.hse_project.hse.KvdbTransaction.State.class, invalid_field);
+        env, globals.com.micron.hse_project.hse.KvdbTransaction.State.class, field);
     ASSERT_NO_EXCEPTION();
     globals.com.micron.hse_project.hse.KvdbTransaction.State.INVALID =
         (*env)->NewGlobalRef(env, local);
@@ -362,10 +372,10 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
 void
 JNI_OnUnload(JavaVM *vm, void *reserved)
 {
-    (void)reserved;
-
-    jint    rc;
+    jint rc;
     JNIEnv *env;
+
+    (void)reserved;
 
     rc = (*vm)->GetEnv(vm, (void **)&env, HSE_JNI_VERSION);
     if (rc)

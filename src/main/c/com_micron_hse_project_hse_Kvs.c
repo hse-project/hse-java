@@ -10,30 +10,33 @@
 #include <hse/hse.h>
 #include <jni.h>
 
-#include "hsejni.h"
 #include "com_micron_hse_project_hse_Kvs.h"
+#include "hsejni.h"
 
 void
 Java_com_micron_hse_1project_hse_Kvs_create(
-    JNIEnv      *env,
-    jclass       kvs_cls,
-    jlong        kvdb_handle,
-    jstring      kvs_name,
+    JNIEnv *env,
+    jclass kvs_cls,
+    jlong kvdb_handle,
+    jstring kvs_name,
     jobjectArray params)
 {
-    (void)kvs_cls;
-
+    jsize paramc;
+    hse_err_t err;
+    const char **paramv;
+    const char *kvs_name_chars = NULL;
     struct hse_kvdb *kvdb = (struct hse_kvdb *)kvdb_handle;
 
-    const char *kvs_name_chars = kvs_name ? (*env)->GetStringUTFChars(env, kvs_name, NULL) : NULL;
+    (void)kvs_cls;
 
-    jsize        paramc;
-    const char **paramv;
+    if (kvs_name)
+        kvs_name_chars = (*env)->GetStringUTFChars(env, kvs_name, NULL);
+
     to_paramv(env, params, &paramc, &paramv);
     if ((*env)->ExceptionCheck(env))
         return;
 
-    const hse_err_t err = hse_kvdb_kvs_create(kvdb, kvs_name_chars, paramc, paramv);
+    err = hse_kvdb_kvs_create(kvdb, kvs_name_chars, paramc, paramv);
 
     if (kvs_name)
         (*env)->ReleaseStringUTFChars(env, kvs_name, kvs_name_chars);
@@ -47,17 +50,20 @@ Java_com_micron_hse_1project_hse_Kvs_create(
 void
 Java_com_micron_hse_1project_hse_Kvs_drop(
     JNIEnv *env,
-    jclass  kvs_cls,
-    jlong   kvdb_handle,
+    jclass kvs_cls,
+    jlong kvdb_handle,
     jstring kvs_name)
 {
+    hse_err_t err;
+    struct hse_kvdb *kvdb = (struct hse_kvdb *)kvdb_handle;
+    const char *kvs_name_chars = NULL;
+
     (void)kvs_cls;
 
-    struct hse_kvdb *kvdb = (struct hse_kvdb *)kvdb_handle;
+    if (kvs_name)
+        kvs_name_chars = (*env)->GetStringUTFChars(env, kvs_name, NULL);
 
-    const char *kvs_name_chars = kvs_name ? (*env)->GetStringUTFChars(env, kvs_name, NULL) : NULL;
-
-    const hse_err_t err = hse_kvdb_kvs_drop(kvdb, kvs_name_chars);
+    err = hse_kvdb_kvs_drop(kvdb, kvs_name_chars);
 
     if (kvs_name)
         (*env)->ReleaseStringUTFChars(env, kvs_name, kvs_name_chars);
@@ -68,26 +74,29 @@ Java_com_micron_hse_1project_hse_Kvs_drop(
 
 jlong
 Java_com_micron_hse_1project_hse_Kvs_open(
-    JNIEnv      *env,
-    jclass       kvs_cls,
-    jlong        kvdb_handle,
-    jstring      kvs_name,
+    JNIEnv *env,
+    jclass kvs_cls,
+    jlong kvdb_handle,
+    jstring kvs_name,
     jobjectArray params)
 {
+    jsize paramc;
+    hse_err_t err;
+    const char **paramv;
+    struct hse_kvs *kvs;
+    const char *kvs_name_chars = NULL;
+    struct hse_kvdb *kvdb = (struct hse_kvdb *)kvdb_handle;
+
     (void)kvs_cls;
 
-    struct hse_kvdb *kvdb = (struct hse_kvdb *)kvdb_handle;
-    struct hse_kvs  *kvs;
+    if (kvs_name)
+        kvs_name_chars = (*env)->GetStringUTFChars(env, kvs_name, NULL);
 
-    const char *kvs_name_chars = kvs_name ? (*env)->GetStringUTFChars(env, kvs_name, NULL) : NULL;
-
-    jsize        paramc;
-    const char **paramv;
     to_paramv(env, params, &paramc, &paramv);
     if ((*env)->ExceptionCheck(env))
         return 0;
 
-    const hse_err_t err = hse_kvdb_kvs_open(kvdb, kvs_name_chars, paramc, paramv, &kvs);
+    err = hse_kvdb_kvs_open(kvdb, kvs_name_chars, paramc, paramv, &kvs);
 
     if (kvs_name)
         (*env)->ReleaseStringUTFChars(env, kvs_name, kvs_name_chars);
@@ -103,33 +112,37 @@ Java_com_micron_hse_1project_hse_Kvs_open(
 void
 Java_com_micron_hse_1project_hse_Kvs_close(JNIEnv *env, jobject kvs_obj, jlong kvs_handle)
 {
-    (void)kvs_obj;
-
+    hse_err_t err;
     struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
 
-    const hse_err_t err = hse_kvdb_kvs_close(kvs);
+    (void)kvs_obj;
+
+    err = hse_kvdb_kvs_close(kvs);
     if (err)
         throw_new_hse_exception(env, err);
 }
 
 void
 Java_com_micron_hse_1project_hse_Kvs_delete__J_3BIIJ(
-    JNIEnv    *env,
-    jobject    kvs_obj,
-    jlong      kvs_handle,
+    JNIEnv *env,
+    jobject kvs_obj,
+    jlong kvs_handle,
     jbyteArray key,
-    jint       key_len,
-    jint       flags,
-    jlong      txn_handle)
+    jint key_len,
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    hse_err_t err;
+    jbyte *key_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    jbyte *key_data = key ? (*env)->GetByteArrayElements(env, key, NULL) : NULL;
+    (void)kvs_obj;
 
-    const hse_err_t err = hse_kvs_delete(kvs, flags, txn, key_data, key_len);
+    if (key)
+        key_data = (*env)->GetByteArrayElements(env, key, NULL);
+
+    err = hse_kvs_delete(kvs, flags, txn, key_data, key_len);
 
     if (key)
         (*env)->ReleaseByteArrayElements(env, key, key_data, JNI_ABORT);
@@ -142,24 +155,25 @@ void
 Java_com_micron_hse_1project_hse_Kvs_delete__JLjava_lang_String_2IJ(
     JNIEnv *env,
     jobject kvs_obj,
-    jlong   kvs_handle,
+    jlong kvs_handle,
     jstring key,
-    jint    flags,
-    jlong   txn_handle)
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    hse_err_t err;
+    jsize key_len = 0;
+    const char *key_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    const char *key_data = NULL;
-    jsize       key_len = 0;
+    (void)kvs_obj;
+
     if (key) {
         key_data = (*env)->GetStringUTFChars(env, key, NULL);
         key_len = (*env)->GetStringUTFLength(env, key);
     }
 
-    const hse_err_t err = hse_kvs_delete(kvs, flags, txn, key_data, key_len);
+    err = hse_kvs_delete(kvs, flags, txn, key_data, key_len);
 
     if (key)
         (*env)->ReleaseStringUTFChars(env, key, key_data);
@@ -172,19 +186,20 @@ void
 Java_com_micron_hse_1project_hse_Kvs_delete__JLjava_nio_ByteBuffer_2IIIJ(
     JNIEnv *env,
     jobject kvs_obj,
-    jlong   kvs_handle,
+    jlong kvs_handle,
     jobject key,
-    jint    key_len,
-    jint    key_pos,
-    jint    flags,
-    jlong   txn_handle)
+    jint key_len,
+    jint key_pos,
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    hse_err_t err;
+    const void *key_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    const void *key_data = NULL;
+    (void)kvs_obj;
+
     if (key) {
         key_data = (*env)->GetDirectBufferAddress(env, key);
 
@@ -192,7 +207,7 @@ Java_com_micron_hse_1project_hse_Kvs_delete__JLjava_nio_ByteBuffer_2IIIJ(
         key_data = (uint8_t *)key_data + key_pos;
     }
 
-    const hse_err_t err = hse_kvs_delete(kvs, flags, txn, key_data, key_len);
+    err = hse_kvs_delete(kvs, flags, txn, key_data, key_len);
 
     if (err)
         throw_new_hse_exception(env, err);
@@ -200,22 +215,29 @@ Java_com_micron_hse_1project_hse_Kvs_delete__JLjava_nio_ByteBuffer_2IIIJ(
 
 jbyteArray
 Java_com_micron_hse_1project_hse_Kvs_get__J_3BIIJ(
-    JNIEnv    *env,
-    jobject    kvs_obj,
-    jlong      kvs_handle,
+    JNIEnv *env,
+    jobject kvs_obj,
+    jlong kvs_handle,
     jbyteArray key,
-    jint       key_len,
-    jint       flags,
-    jlong      txn_handle)
+    jint key_len,
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    bool found;
+    hse_err_t err;
+    size_t value_len;
+    jbyte *value_data;
+    jbyte *key_data = NULL;
+    jbyteArray value = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    jbyteArray value = NULL;
-    jbyte     *key_data = key ? (*env)->GetByteArrayElements(env, key, NULL) : NULL;
-    jbyte     *value_data = malloc(HSE_KVS_VALUE_LEN_MAX);
+    (void)kvs_obj;
+
+    if (key)
+        key_data = (*env)->GetByteArrayElements(env, key, NULL);
+
+    value_data = malloc(HSE_KVS_VALUE_LEN_MAX * sizeof(*value_data));
     if (!value_data) {
         (*env)->ThrowNew(
             env,
@@ -224,9 +246,7 @@ Java_com_micron_hse_1project_hse_Kvs_get__J_3BIIJ(
         return NULL;
     }
 
-    bool            found;
-    size_t          value_len;
-    const hse_err_t err = hse_kvs_get(
+    err = hse_kvs_get(
         kvs, flags, txn, key_data, key_len, &found, value_data, HSE_KVS_VALUE_LEN_MAX, &value_len);
 
     if (key)
@@ -267,25 +287,29 @@ jbyteArray
 Java_com_micron_hse_1project_hse_Kvs_get__JLjava_lang_String_2IJ(
     JNIEnv *env,
     jobject kvs_obj,
-    jlong   kvs_handle,
+    jlong kvs_handle,
     jstring key,
-    jint    flags,
-    jlong   txn_handle)
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    bool found;
+    hse_err_t err;
+    size_t value_len;
+    jsize key_len = 0;
+    jbyte *value_data;
+    jbyteArray value = NULL;
+    const char *key_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    jbyteArray  value = NULL;
-    const char *key_data = NULL;
-    jsize       key_len = 0;
+    (void)kvs_obj;
+
     if (key) {
         key_data = (*env)->GetStringUTFChars(env, key, NULL);
         key_len = (*env)->GetStringUTFLength(env, key);
     }
 
-    jbyte *value_data = malloc(HSE_KVS_VALUE_LEN_MAX);
+    value_data = malloc(HSE_KVS_VALUE_LEN_MAX * sizeof(*value_data));
     if (!value_data) {
         (*env)->ThrowNew(
             env,
@@ -294,9 +318,7 @@ Java_com_micron_hse_1project_hse_Kvs_get__JLjava_lang_String_2IJ(
         return NULL;
     }
 
-    bool            found;
-    size_t          value_len;
-    const hse_err_t err = hse_kvs_get(
+    err = hse_kvs_get(
         kvs, flags, txn, key_data, key_len, &found, value_data, HSE_KVS_VALUE_LEN_MAX, &value_len);
 
     if (key)
@@ -337,20 +359,24 @@ jbyteArray
 Java_com_micron_hse_1project_hse_Kvs_get__JLjava_nio_ByteBuffer_2IIIJ(
     JNIEnv *env,
     jobject kvs_obj,
-    jlong   kvs_handle,
+    jlong kvs_handle,
     jobject key,
-    jint    key_len,
-    jint    key_pos,
-    jint    flags,
-    jlong   txn_handle)
+    jint key_len,
+    jint key_pos,
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    hse_err_t err;
+    size_t value_len;
+    jbyte *value_data;
+    bool found = false;
+    jbyteArray value = NULL;
+    const void *key_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    jbyteArray  value = NULL;
-    const void *key_data = NULL;
+    (void)kvs_obj;
+
     if (key) {
         key_data = (*env)->GetDirectBufferAddress(env, key);
 
@@ -358,7 +384,7 @@ Java_com_micron_hse_1project_hse_Kvs_get__JLjava_nio_ByteBuffer_2IIIJ(
         key_data = (uint8_t *)key_data + key_pos;
     }
 
-    jbyte *value_data = malloc(HSE_KVS_VALUE_LEN_MAX);
+    value_data = malloc(HSE_KVS_VALUE_LEN_MAX * sizeof(*value_data));
     if (!value_data) {
         (*env)->ThrowNew(
             env,
@@ -367,11 +393,8 @@ Java_com_micron_hse_1project_hse_Kvs_get__JLjava_nio_ByteBuffer_2IIIJ(
         return NULL;
     }
 
-    bool            found = false;
-    size_t          value_len;
-    const hse_err_t err = hse_kvs_get(
+    err = hse_kvs_get(
         kvs, flags, txn, key_data, key_len, &found, value_data, HSE_KVS_VALUE_LEN_MAX, &value_len);
-
     if (err) {
         throw_new_hse_exception(env, err);
         goto out;
@@ -405,27 +428,32 @@ out:
 
 jint
 Java_com_micron_hse_1project_hse_Kvs_get__J_3BI_3BIIJ(
-    JNIEnv    *env,
-    jobject    kvs_obj,
-    jlong      kvs_handle,
+    JNIEnv *env,
+    jobject kvs_obj,
+    jlong kvs_handle,
     jbyteArray key,
-    jint       key_len,
+    jint key_len,
     jbyteArray value_buf,
-    jint       value_buf_sz,
-    jint       flags,
-    jlong      txn_handle)
+    jint value_buf_sz,
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    hse_err_t err;
+    size_t value_len;
+    bool found = false;
+    jbyte *key_data = NULL;
+    jbyte *value_buf_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    jbyte *key_data = key ? (*env)->GetByteArrayElements(env, key, NULL) : NULL;
-    jbyte *value_buf_data = value_buf ? (*env)->GetByteArrayElements(env, value_buf, NULL) : NULL;
+    (void)kvs_obj;
 
-    bool            found = false;
-    size_t          value_len;
-    const hse_err_t err = hse_kvs_get(
+    if (key)
+        key_data = (*env)->GetByteArrayElements(env, key, NULL);
+    if (value_buf)
+        value_buf_data = (*env)->GetByteArrayElements(env, value_buf, NULL);
+
+    err = hse_kvs_get(
         kvs, flags, txn, key_data, key_len, &found, value_buf_data, value_buf_sz, &value_len);
 
     if (key)
@@ -460,24 +488,30 @@ Java_com_micron_hse_1project_hse_Kvs_get__J_3BI_3BIIJ(
 
 jint
 Java_com_micron_hse_1project_hse_Kvs_get__J_3BILjava_nio_ByteBuffer_2IIIJ(
-    JNIEnv    *env,
-    jobject    kvs_obj,
-    jlong      kvs_handle,
+    JNIEnv *env,
+    jobject kvs_obj,
+    jlong kvs_handle,
     jbyteArray key,
-    jint       key_len,
-    jobject    value_buf,
-    jint       value_buf_sz,
-    jint       value_buf_pos,
-    jint       flags,
-    jlong      txn_handle)
+    jint key_len,
+    jobject value_buf,
+    jint value_buf_sz,
+    jint value_buf_pos,
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    bool found;
+    hse_err_t err;
+    size_t value_len;
+    jbyte *key_data = NULL;
+    void *value_buf_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    jbyte *key_data = key ? (*env)->GetByteArrayElements(env, key, NULL) : NULL;
-    void  *value_buf_data = NULL;
+    (void)kvs_obj;
+
+    if (key)
+        key_data = (*env)->GetByteArrayElements(env, key, NULL);
+
     if (value_buf) {
         value_buf_data = (*env)->GetDirectBufferAddress(env, value_buf);
 
@@ -485,9 +519,7 @@ Java_com_micron_hse_1project_hse_Kvs_get__J_3BILjava_nio_ByteBuffer_2IIIJ(
         value_buf_data = (uint8_t *)value_buf_data + value_buf_pos;
     }
 
-    bool            found;
-    size_t          value_len;
-    const hse_err_t err = hse_kvs_get(
+    err = hse_kvs_get(
         kvs, flags, txn, key_data, key_len, &found, value_buf_data, value_buf_sz, &value_len);
 
     if (key)
@@ -515,32 +547,35 @@ Java_com_micron_hse_1project_hse_Kvs_get__J_3BILjava_nio_ByteBuffer_2IIIJ(
 
 jint
 Java_com_micron_hse_1project_hse_Kvs_get__JLjava_lang_String_2_3BIIJ(
-    JNIEnv    *env,
-    jobject    kvs_obj,
-    jlong      kvs_handle,
-    jstring    key,
+    JNIEnv *env,
+    jobject kvs_obj,
+    jlong kvs_handle,
+    jstring key,
     jbyteArray value_buf,
-    jint       value_buf_sz,
-    jint       flags,
-    jlong      txn_handle)
+    jint value_buf_sz,
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    bool found;
+    hse_err_t err;
+    size_t value_len;
+    jsize key_len = 0;
+    const char *key_data = NULL;
+    jbyte *value_buf_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    const char *key_data = NULL;
-    jsize       key_len = 0;
+    (void)kvs_obj;
+
     if (key) {
         key_data = (*env)->GetStringUTFChars(env, key, NULL);
         key_len = (*env)->GetStringUTFLength(env, key);
     }
 
-    jbyte *value_buf_data = value_buf ? (*env)->GetByteArrayElements(env, value_buf, NULL) : NULL;
+    if (value_buf)
+        value_buf_data = (*env)->GetByteArrayElements(env, value_buf, NULL);
 
-    bool            found;
-    size_t          value_len;
-    const hse_err_t err = hse_kvs_get(
+    err = hse_kvs_get(
         kvs, flags, txn, key_data, key_len, &found, value_buf_data, value_buf_sz, &value_len);
 
     if (value_buf) {
@@ -578,27 +613,30 @@ jint
 Java_com_micron_hse_1project_hse_Kvs_get__JLjava_lang_String_2Ljava_nio_ByteBuffer_2IIIJ(
     JNIEnv *env,
     jobject kvs_obj,
-    jlong   kvs_handle,
+    jlong kvs_handle,
     jstring key,
     jobject value_buf,
-    jint    value_buf_sz,
-    jint    value_buf_pos,
-    jint    flags,
-    jlong   txn_handle)
+    jint value_buf_sz,
+    jint value_buf_pos,
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    bool found;
+    hse_err_t err;
+    size_t value_len;
+    jsize key_len = 0;
+    const char *key_data = NULL;
+    void *value_buf_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    const char *key_data = NULL;
-    jsize       key_len = 0;
+    (void)kvs_obj;
+
     if (key) {
         key_data = (*env)->GetStringUTFChars(env, key, NULL);
         key_len = (*env)->GetStringUTFLength(env, key);
     }
 
-    void *value_buf_data = NULL;
     if (value_buf) {
         value_buf_data = (*env)->GetDirectBufferAddress(env, value_buf);
 
@@ -606,9 +644,7 @@ Java_com_micron_hse_1project_hse_Kvs_get__JLjava_lang_String_2Ljava_nio_ByteBuff
         value_buf_data = (uint8_t *)value_buf_data + value_buf_pos;
     }
 
-    bool            found;
-    size_t          value_len;
-    const hse_err_t err = hse_kvs_get(
+    err = hse_kvs_get(
         kvs, flags, txn, key_data, key_len, &found, value_buf_data, value_buf_sz, &value_len);
 
     if (key)
@@ -636,23 +672,27 @@ Java_com_micron_hse_1project_hse_Kvs_get__JLjava_lang_String_2Ljava_nio_ByteBuff
 
 jint
 Java_com_micron_hse_1project_hse_Kvs_get__JLjava_nio_ByteBuffer_2II_3BIIJ(
-    JNIEnv    *env,
-    jobject    kvs_obj,
-    jlong      kvs_handle,
-    jobject    key,
-    jint       key_len,
-    jint       key_pos,
+    JNIEnv *env,
+    jobject kvs_obj,
+    jlong kvs_handle,
+    jobject key,
+    jint key_len,
+    jint key_pos,
     jbyteArray value_buf,
-    jint       value_buf_sz,
-    jint       flags,
-    jlong      txn_handle)
+    jint value_buf_sz,
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    bool found;
+    hse_err_t err;
+    size_t value_len;
+    const void *key_data = NULL;
+    jbyte *value_buf_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    const void *key_data = NULL;
+    (void)kvs_obj;
+
     if (key) {
         key_data = (*env)->GetDirectBufferAddress(env, key);
 
@@ -660,11 +700,10 @@ Java_com_micron_hse_1project_hse_Kvs_get__JLjava_nio_ByteBuffer_2II_3BIIJ(
         key_data = (uint8_t *)key_data + key_pos;
     }
 
-    jbyte *value_buf_data = value_buf ? (*env)->GetByteArrayElements(env, value_buf, NULL) : NULL;
+    if (value_buf)
+        value_buf_data = (*env)->GetByteArrayElements(env, value_buf, NULL);
 
-    bool            found;
-    size_t          value_len;
-    const hse_err_t err = hse_kvs_get(
+    err = hse_kvs_get(
         kvs, flags, txn, key_data, key_len, &found, value_buf_data, value_buf_sz, &value_len);
 
     if (value_buf) {
@@ -699,22 +738,26 @@ jint
 Java_com_micron_hse_1project_hse_Kvs_get__JLjava_nio_ByteBuffer_2IILjava_nio_ByteBuffer_2IIIJ(
     JNIEnv *env,
     jobject kvs_obj,
-    jlong   kvs_handle,
+    jlong kvs_handle,
     jobject key,
-    jint    key_len,
-    jint    key_pos,
+    jint key_len,
+    jint key_pos,
     jobject value_buf,
-    jint    value_buf_sz,
-    jint    value_buf_pos,
-    jint    flags,
-    jlong   txn_handle)
+    jint value_buf_sz,
+    jint value_buf_pos,
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    bool found;
+    hse_err_t err;
+    size_t value_len;
+    void *value_buf_data = NULL;
+    const void *key_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    const void *key_data = NULL;
+    (void)kvs_obj;
+
     if (key) {
         key_data = (*env)->GetDirectBufferAddress(env, key);
 
@@ -722,7 +765,6 @@ Java_com_micron_hse_1project_hse_Kvs_get__JLjava_nio_ByteBuffer_2IILjava_nio_Byt
         key_data = (uint8_t *)key_data + key_pos;
     }
 
-    void *value_buf_data = NULL;
     if (value_buf) {
         value_buf_data = (*env)->GetDirectBufferAddress(env, value_buf);
 
@@ -730,11 +772,8 @@ Java_com_micron_hse_1project_hse_Kvs_get__JLjava_nio_ByteBuffer_2IILjava_nio_Byt
         value_buf_data = (uint8_t *)value_buf_data + value_buf_pos;
     }
 
-    bool            found;
-    size_t          value_len;
-    const hse_err_t err = hse_kvs_get(
+    err = hse_kvs_get(
         kvs, flags, txn, key_data, key_len, &found, value_buf_data, value_buf_sz, &value_len);
-
     if (err) {
         throw_new_hse_exception(env, err);
         return 0;
@@ -758,11 +797,12 @@ Java_com_micron_hse_1project_hse_Kvs_get__JLjava_nio_ByteBuffer_2IILjava_nio_Byt
 jstring
 Java_com_micron_hse_1project_hse_Kvs_getName(JNIEnv *env, jobject kvs_obj, jlong kvs_handle)
 {
-    (void)kvs_obj;
-
+    const char *name;
     struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
 
-    const char *name = hse_kvs_name_get(kvs);
+    (void)kvs_obj;
+
+    name = hse_kvs_name_get(kvs);
 
     return (*env)->NewStringUTF(env, name);
 }
@@ -771,28 +811,29 @@ jstring
 Java_com_micron_hse_1project_hse_Kvs_getParam(
     JNIEnv *env,
     jobject kvs_obj,
-    jlong   kvs_handle,
+    jlong kvs_handle,
     jstring param)
 {
+    char *buf = NULL;
+    size_t needed_sz;
+    hse_err_t err = 0;
+    jstring value = NULL;
+    const char *param_chars = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
+
     (void)env;
     (void)kvs_obj;
 
-    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
+    if (param)
+        param_chars = (*env)->GetStringUTFChars(env, param, NULL);
 
-    hse_err_t err = 0;
-    jstring   value = NULL;
-    char     *buf = NULL;
-
-    const char *param_chars = param ? (*env)->GetStringUTFChars(env, param, NULL) : NULL;
-
-    size_t needed_sz;
     err = hse_kvs_param_get(kvs, param_chars, NULL, 0, &needed_sz);
     if (err) {
         throw_new_hse_exception(env, err);
         goto out;
     }
 
-    buf = malloc(needed_sz + 1);
+    buf = malloc((needed_sz + 1) * sizeof(*buf));
     if (!buf) {
         (*env)->ThrowNew(
             env,
@@ -822,22 +863,25 @@ out:
 
 void
 Java_com_micron_hse_1project_hse_Kvs_prefixDelete__J_3BIIJ(
-    JNIEnv    *env,
-    jobject    kvs_obj,
-    jlong      kvs_handle,
+    JNIEnv *env,
+    jobject kvs_obj,
+    jlong kvs_handle,
     jbyteArray pfx,
-    jint       pfx_len,
-    jint       flags,
-    jlong      txn_handle)
+    jint pfx_len,
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    hse_err_t err;
+    jbyte *pfx_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    jbyte *pfx_data = pfx ? (*env)->GetByteArrayElements(env, pfx, NULL) : NULL;
+    (void)kvs_obj;
 
-    const hse_err_t err = hse_kvs_prefix_delete(kvs, flags, txn, pfx_data, pfx_len);
+    if (pfx)
+        pfx_data = (*env)->GetByteArrayElements(env, pfx, NULL);
+
+    err = hse_kvs_prefix_delete(kvs, flags, txn, pfx_data, pfx_len);
 
     if (pfx)
         (*env)->ReleaseByteArrayElements(env, pfx, pfx_data, JNI_ABORT);
@@ -850,24 +894,25 @@ void
 Java_com_micron_hse_1project_hse_Kvs_prefixDelete__JLjava_lang_String_2IJ(
     JNIEnv *env,
     jobject kvs_obj,
-    jlong   kvs_handle,
+    jlong kvs_handle,
     jstring pfx,
-    jint    flags,
-    jlong   txn_handle)
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    hse_err_t err;
+    jsize pfx_len = 0;
+    const char *pfx_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    const char *pfx_data = NULL;
-    jsize       pfx_len = 0;
+    (void)kvs_obj;
+
     if (pfx) {
         pfx_data = (*env)->GetStringUTFChars(env, pfx, NULL);
         pfx_len = (*env)->GetStringUTFLength(env, pfx);
     }
 
-    const hse_err_t err = hse_kvs_prefix_delete(kvs, flags, txn, pfx_data, pfx_len);
+    err = hse_kvs_prefix_delete(kvs, flags, txn, pfx_data, pfx_len);
 
     if (pfx)
         (*env)->ReleaseStringUTFChars(env, pfx, pfx_data);
@@ -880,19 +925,20 @@ void
 Java_com_micron_hse_1project_hse_Kvs_prefixDelete__JLjava_nio_ByteBuffer_2IIIJ(
     JNIEnv *env,
     jobject kvs_obj,
-    jlong   kvs_handle,
+    jlong kvs_handle,
     jobject pfx,
-    jint    pfx_len,
-    jint    pfx_pos,
-    jint    flags,
-    jlong   txn_handle)
+    jint pfx_len,
+    jint pfx_pos,
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    hse_err_t err;
+    const void *pfx_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    const void *pfx_data = NULL;
+    (void)kvs_obj;
+
     if (pfx) {
         pfx_data = (*env)->GetDirectBufferAddress(env, pfx);
 
@@ -900,7 +946,7 @@ Java_com_micron_hse_1project_hse_Kvs_prefixDelete__JLjava_nio_ByteBuffer_2IIIJ(
         pfx_data = (uint8_t *)pfx_data + pfx_pos;
     }
 
-    const hse_err_t err = hse_kvs_prefix_delete(kvs, flags, txn, pfx_data, pfx_len);
+    err = hse_kvs_prefix_delete(kvs, flags, txn, pfx_data, pfx_len);
 
     if (err)
         throw_new_hse_exception(env, err);
@@ -908,25 +954,30 @@ Java_com_micron_hse_1project_hse_Kvs_prefixDelete__JLjava_nio_ByteBuffer_2IIIJ(
 
 void
 Java_com_micron_hse_1project_hse_Kvs_put__J_3BI_3BIIJ(
-    JNIEnv    *env,
-    jobject    kvs_obj,
-    jlong      kvs_handle,
+    JNIEnv *env,
+    jobject kvs_obj,
+    jlong kvs_handle,
     jbyteArray key,
-    jint       key_len,
+    jint key_len,
     jbyteArray value,
-    jint       value_len,
-    jint       flags,
-    jlong      txn_handle)
+    jint value_len,
+    jint flags,
+    jlong txn_handle)
 {
+    hse_err_t err;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
+    struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
+    jbyte *key_data = NULL;
+    jbyte *value_data = NULL;
+
     (void)kvs_obj;
 
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
-    struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
+    if (key)
+        key_data = (*env)->GetByteArrayElements(env, key, NULL);
+    if (value)
+        value_data = (*env)->GetByteArrayElements(env, value, NULL);
 
-    jbyte *key_data = key ? (*env)->GetByteArrayElements(env, key, NULL) : NULL;
-    jbyte *value_data = value ? (*env)->GetByteArrayElements(env, value, NULL) : NULL;
-
-    const hse_err_t err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
+    err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
 
     if (key)
         (*env)->ReleaseByteArrayElements(env, key, key_data, JNI_ABORT);
@@ -939,29 +990,33 @@ Java_com_micron_hse_1project_hse_Kvs_put__J_3BI_3BIIJ(
 
 void
 Java_com_micron_hse_1project_hse_Kvs_put__J_3BILjava_lang_String_2IJ(
-    JNIEnv    *env,
-    jobject    kvs_obj,
-    jlong      kvs_handle,
+    JNIEnv *env,
+    jobject kvs_obj,
+    jlong kvs_handle,
     jbyteArray key,
-    jint       key_len,
-    jstring    value,
-    jint       flags,
-    jlong      txn_handle)
+    jint key_len,
+    jstring value,
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    hse_err_t err;
+    jsize value_len = 0;
+    jbyte *key_data = NULL;
+    const char *value_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    jbyte      *key_data = key ? (*env)->GetByteArrayElements(env, key, NULL) : NULL;
-    const char *value_data = NULL;
-    jsize       value_len = 0;
+    (void)kvs_obj;
+
+    if (key)
+        key_data = (*env)->GetByteArrayElements(env, key, NULL);
+
     if (value) {
         value_data = (*env)->GetStringUTFChars(env, value, NULL);
         value_len = (*env)->GetStringUTFLength(env, value);
     }
 
-    const hse_err_t err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
+    err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
 
     if (key)
         (*env)->ReleaseByteArrayElements(env, key, key_data, JNI_ABORT);
@@ -974,24 +1029,28 @@ Java_com_micron_hse_1project_hse_Kvs_put__J_3BILjava_lang_String_2IJ(
 
 void
 Java_com_micron_hse_1project_hse_Kvs_put__J_3BILjava_nio_ByteBuffer_2IIIJ(
-    JNIEnv    *env,
-    jobject    kvs_obj,
-    jlong      kvs_handle,
+    JNIEnv *env,
+    jobject kvs_obj,
+    jlong kvs_handle,
     jbyteArray key,
-    jint       key_len,
-    jobject    value,
-    jint       value_len,
-    jint       value_pos,
-    jint       flags,
-    jlong      txn_handle)
+    jint key_len,
+    jobject value,
+    jint value_len,
+    jint value_pos,
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    hse_err_t err;
+    jbyte *key_data = NULL;
+    const void *value_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    jbyte      *key_data = key ? (*env)->GetByteArrayElements(env, key, NULL) : NULL;
-    const void *value_data = NULL;
+    (void)kvs_obj;
+
+    if (key)
+        key_data = (*env)->GetByteArrayElements(env, key, NULL);
+
     if (value) {
         value_data = (*env)->GetDirectBufferAddress(env, value);
 
@@ -999,7 +1058,7 @@ Java_com_micron_hse_1project_hse_Kvs_put__J_3BILjava_nio_ByteBuffer_2IIIJ(
         value_data = (uint8_t *)value_data + value_pos;
     }
 
-    const hse_err_t err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
+    err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
 
     if (key)
         (*env)->ReleaseByteArrayElements(env, key, key_data, JNI_ABORT);
@@ -1010,30 +1069,33 @@ Java_com_micron_hse_1project_hse_Kvs_put__J_3BILjava_nio_ByteBuffer_2IIIJ(
 
 void
 Java_com_micron_hse_1project_hse_Kvs_put__JLjava_lang_String_2_3BIIJ(
-    JNIEnv    *env,
-    jobject    kvs_obj,
-    jlong      kvs_handle,
-    jstring    key,
+    JNIEnv *env,
+    jobject kvs_obj,
+    jlong kvs_handle,
+    jstring key,
     jbyteArray value,
-    jint       value_len,
-    jint       flags,
-    jlong      txn_handle)
+    jint value_len,
+    jint flags,
+    jlong txn_handle)
 {
+    hse_err_t err;
+    jsize key_len = 0;
+    const char *key_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
+    struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
+    jbyte *value_data = NULL;
+
     (void)kvs_obj;
 
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
-    struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
-
-    const char *key_data = NULL;
-    jsize       key_len = 0;
     if (key) {
         key_data = (*env)->GetStringUTFChars(env, key, NULL);
         key_len = (*env)->GetStringUTFLength(env, key);
     }
 
-    jbyte *value_data = value ? (*env)->GetByteArrayElements(env, value, NULL) : NULL;
+    if (value)
+        value_data = (*env)->GetByteArrayElements(env, value, NULL);
 
-    const hse_err_t err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
+    err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
 
     if (key)
         (*env)->ReleaseStringUTFChars(env, key, key_data);
@@ -1048,32 +1110,33 @@ void
 Java_com_micron_hse_1project_hse_Kvs_put__JLjava_lang_String_2Ljava_lang_String_2IJ(
     JNIEnv *env,
     jobject kvs_obj,
-    jlong   kvs_handle,
+    jlong kvs_handle,
     jstring key,
     jstring value,
-    jint    flags,
-    jlong   txn_handle)
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    hse_err_t err;
+    jsize key_len = 0;
+    jsize value_len = 0;
+    const char *key_data = NULL;
+    const char *value_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    const char *key_data = NULL;
-    jsize       key_len = 0;
+    (void)kvs_obj;
+
     if (key) {
         key_data = (*env)->GetStringUTFChars(env, key, NULL);
         key_len = (*env)->GetStringUTFLength(env, key);
     }
 
-    const char *value_data = NULL;
-    jsize       value_len = 0;
     if (value) {
         value_data = (*env)->GetStringUTFChars(env, value, NULL);
         value_len = (*env)->GetStringUTFLength(env, value);
     }
 
-    const hse_err_t err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
+    err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
 
     if (key)
         (*env)->ReleaseStringUTFChars(env, key, key_data);
@@ -1088,27 +1151,28 @@ void
 Java_com_micron_hse_1project_hse_Kvs_put__JLjava_lang_String_2Ljava_nio_ByteBuffer_2IIIJ(
     JNIEnv *env,
     jobject kvs_obj,
-    jlong   kvs_handle,
+    jlong kvs_handle,
     jstring key,
     jobject value,
-    jint    value_len,
-    jint    value_pos,
-    jint    flags,
-    jlong   txn_handle)
+    jint value_len,
+    jint value_pos,
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    hse_err_t err;
+    jsize key_len = 0;
+    const char *key_data = NULL;
+    const void *value_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    const char *key_data = NULL;
-    jsize       key_len = 0;
+    (void)kvs_obj;
+
     if (key) {
         key_data = (*env)->GetStringUTFChars(env, key, NULL);
         key_len = (*env)->GetStringUTFLength(env, key);
     }
 
-    const void *value_data = NULL;
     if (value) {
         value_data = (*env)->GetDirectBufferAddress(env, value);
 
@@ -1116,7 +1180,7 @@ Java_com_micron_hse_1project_hse_Kvs_put__JLjava_lang_String_2Ljava_nio_ByteBuff
         value_data = (uint8_t *)value_data + value_pos;
     }
 
-    const hse_err_t err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
+    err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
 
     if (key)
         (*env)->ReleaseStringUTFChars(env, key, key_data);
@@ -1127,23 +1191,25 @@ Java_com_micron_hse_1project_hse_Kvs_put__JLjava_lang_String_2Ljava_nio_ByteBuff
 
 void
 Java_com_micron_hse_1project_hse_Kvs_put__JLjava_nio_ByteBuffer_2II_3BIIJ(
-    JNIEnv    *env,
-    jobject    kvs_obj,
-    jlong      kvs_handle,
-    jobject    key,
-    jint       key_len,
-    jint       key_pos,
+    JNIEnv *env,
+    jobject kvs_obj,
+    jlong kvs_handle,
+    jobject key,
+    jint key_len,
+    jint key_pos,
     jbyteArray value,
-    jint       value_len,
-    jint       flags,
-    jlong      txn_handle)
+    jint value_len,
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    hse_err_t err;
+    jbyte *value_data = NULL;
+    const void *key_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    const void *key_data = NULL;
+    (void)kvs_obj;
+
     if (key) {
         key_data = (*env)->GetDirectBufferAddress(env, key);
 
@@ -1151,9 +1217,10 @@ Java_com_micron_hse_1project_hse_Kvs_put__JLjava_nio_ByteBuffer_2II_3BIIJ(
         key_data = (uint8_t *)key_data + key_pos;
     }
 
-    jbyte *value_data = value ? (*env)->GetByteArrayElements(env, value, NULL) : NULL;
+    if (value)
+        value_data = (*env)->GetByteArrayElements(env, value, NULL);
 
-    const hse_err_t err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
+    err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
 
     if (value)
         (*env)->ReleaseByteArrayElements(env, value, value_data, JNI_ABORT);
@@ -1166,20 +1233,23 @@ void
 Java_com_micron_hse_1project_hse_Kvs_put__JLjava_nio_ByteBuffer_2IILjava_lang_String_2IJ(
     JNIEnv *env,
     jobject kvs_obj,
-    jlong   kvs_handle,
+    jlong kvs_handle,
     jobject key,
-    jint    key_len,
-    jint    key_pos,
+    jint key_len,
+    jint key_pos,
     jstring value,
-    jint    flags,
-    jlong   txn_handle)
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    hse_err_t err;
+    jsize value_len = 0;
+    const void *key_data = NULL;
+    const char *value_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    const void *key_data = NULL;
+    (void)kvs_obj;
+
     if (key) {
         key_data = (*env)->GetDirectBufferAddress(env, key);
 
@@ -1187,15 +1257,12 @@ Java_com_micron_hse_1project_hse_Kvs_put__JLjava_nio_ByteBuffer_2IILjava_lang_St
         key_data = (uint8_t *)key_data + key_pos;
     }
 
-    const char *value_data = NULL;
-    jsize       value_len = 0;
     if (value) {
         value_data = (*env)->GetStringUTFChars(env, value, NULL);
         value_len = (*env)->GetStringUTFLength(env, value);
     }
 
-    const hse_err_t err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
-
+    err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
     if (err)
         throw_new_hse_exception(env, err);
 }
@@ -1204,22 +1271,24 @@ void
 Java_com_micron_hse_1project_hse_Kvs_put__JLjava_nio_ByteBuffer_2IILjava_nio_ByteBuffer_2IIIJ(
     JNIEnv *env,
     jobject kvs_obj,
-    jlong   kvs_handle,
+    jlong kvs_handle,
     jobject key,
-    jint    key_len,
-    jint    key_pos,
+    jint key_len,
+    jint key_pos,
     jobject value,
-    jint    value_len,
-    jint    value_pos,
-    jint    flags,
-    jlong   txn_handle)
+    jint value_len,
+    jint value_pos,
+    jint flags,
+    jlong txn_handle)
 {
-    (void)kvs_obj;
-
-    struct hse_kvs      *kvs = (struct hse_kvs *)kvs_handle;
+    hse_err_t err;
+    const void *key_data = NULL;
+    const void *value_data = NULL;
+    struct hse_kvs *kvs = (struct hse_kvs *)kvs_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    const void *key_data = NULL;
+    (void)kvs_obj;
+
     if (key) {
         key_data = (*env)->GetDirectBufferAddress(env, key);
 
@@ -1227,7 +1296,6 @@ Java_com_micron_hse_1project_hse_Kvs_put__JLjava_nio_ByteBuffer_2IILjava_nio_Byt
         key_data = (uint8_t *)key_data + key_pos;
     }
 
-    const void *value_data = NULL;
     if (value) {
         value_data = (*env)->GetDirectBufferAddress(env, value);
 
@@ -1235,8 +1303,7 @@ Java_com_micron_hse_1project_hse_Kvs_put__JLjava_nio_ByteBuffer_2IILjava_nio_Byt
         value_data = (uint8_t *)value_data + value_pos;
     }
 
-    const hse_err_t err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
-
+    err = hse_kvs_put(kvs, flags, txn, key_data, key_len, value_data, value_len);
     if (err)
         throw_new_hse_exception(env, err);
 }

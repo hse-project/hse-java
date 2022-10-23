@@ -8,21 +8,22 @@
 #include <hse/hse.h>
 #include <jni.h>
 
-#include "hsejni.h"
 #include "com_micron_hse_project_hse_KvdbTransaction.h"
+#include "hsejni.h"
 
 jlong
 Java_com_micron_hse_1project_hse_KvdbTransaction_alloc(
     JNIEnv *env,
-    jclass  txn_cls,
-    jlong   kvdb_handle)
+    jclass txn_cls,
+    jlong kvdb_handle)
 {
+    struct hse_kvdb_txn *txn;
+    struct hse_kvdb *kvdb = (struct hse_kvdb *)kvdb_handle;
+
     (void)env;
     (void)txn_cls;
 
-    struct hse_kvdb *kvdb = (struct hse_kvdb *)kvdb_handle;
-
-    struct hse_kvdb_txn *txn = hse_kvdb_txn_alloc(kvdb);
+    txn = hse_kvdb_txn_alloc(kvdb);
 
     return (jlong)txn;
 }
@@ -31,14 +32,14 @@ void
 Java_com_micron_hse_1project_hse_KvdbTransaction_free(
     JNIEnv *env,
     jobject txn_obj,
-    jlong   kvdb_handle,
-    jlong   txn_handle)
+    jlong kvdb_handle,
+    jlong txn_handle)
 {
+    struct hse_kvdb *kvdb = (struct hse_kvdb *)kvdb_handle;
+    struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
+
     (void)env;
     (void)txn_obj;
-
-    struct hse_kvdb     *kvdb = (struct hse_kvdb *)kvdb_handle;
-    struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
     hse_kvdb_txn_free(kvdb, txn);
 }
@@ -47,15 +48,16 @@ void
 Java_com_micron_hse_1project_hse_KvdbTransaction_abort(
     JNIEnv *env,
     jobject txn_obj,
-    jlong   kvdb_handle,
-    jlong   txn_handle)
+    jlong kvdb_handle,
+    jlong txn_handle)
 {
-    (void)txn_obj;
-
-    struct hse_kvdb     *kvdb = (struct hse_kvdb *)kvdb_handle;
+    hse_err_t err;
+    struct hse_kvdb *kvdb = (struct hse_kvdb *)kvdb_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    const hse_err_t err = hse_kvdb_txn_abort(kvdb, txn);
+    (void)txn_obj;
+
+    err = hse_kvdb_txn_abort(kvdb, txn);
     if (err)
         throw_new_hse_exception(env, err);
 }
@@ -64,15 +66,16 @@ void
 Java_com_micron_hse_1project_hse_KvdbTransaction_begin(
     JNIEnv *env,
     jobject txn_obj,
-    jlong   kvdb_handle,
-    jlong   txn_handle)
+    jlong kvdb_handle,
+    jlong txn_handle)
 {
-    (void)txn_obj;
-
-    struct hse_kvdb     *kvdb = (struct hse_kvdb *)kvdb_handle;
+    hse_err_t err;
+    struct hse_kvdb *kvdb = (struct hse_kvdb *)kvdb_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    const hse_err_t err = hse_kvdb_txn_begin(kvdb, txn);
+    (void)txn_obj;
+
+    err = hse_kvdb_txn_begin(kvdb, txn);
     if (err)
         throw_new_hse_exception(env, err);
 }
@@ -81,15 +84,16 @@ void
 Java_com_micron_hse_1project_hse_KvdbTransaction_commit(
     JNIEnv *env,
     jobject txn_obj,
-    jlong   kvdb_handle,
-    jlong   txn_handle)
+    jlong kvdb_handle,
+    jlong txn_handle)
 {
-    (void)txn_obj;
-
-    struct hse_kvdb     *kvdb = (struct hse_kvdb *)kvdb_handle;
+    hse_err_t err;
+    struct hse_kvdb *kvdb = (struct hse_kvdb *)kvdb_handle;
     struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
 
-    const hse_err_t err = hse_kvdb_txn_commit(kvdb, txn);
+    (void)txn_obj;
+
+    err = hse_kvdb_txn_commit(kvdb, txn);
     if (err)
         throw_new_hse_exception(env, err);
 }
@@ -98,16 +102,17 @@ jobject
 Java_com_micron_hse_1project_hse_KvdbTransaction_getState(
     JNIEnv *env,
     jobject txn_obj,
-    jlong   kvdb_handle,
-    jlong   txn_handle)
+    jlong kvdb_handle,
+    jlong txn_handle)
 {
+    enum hse_kvdb_txn_state state;
+    struct hse_kvdb *kvdb = (struct hse_kvdb *)kvdb_handle;
+    struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
+
     (void)env;
     (void)txn_obj;
 
-    struct hse_kvdb     *kvdb = (struct hse_kvdb *)kvdb_handle;
-    struct hse_kvdb_txn *txn = (struct hse_kvdb_txn *)txn_handle;
-
-    const enum hse_kvdb_txn_state state = hse_kvdb_txn_state_get(kvdb, txn);
+    state = hse_kvdb_txn_state_get(kvdb, txn);
 
     switch (state) {
         case HSE_KVDB_TXN_ABORTED:

@@ -6,33 +6,36 @@
 #include <hse/hse.h>
 #include <jni.h>
 
-#include "hsejni.h"
 #include "com_micron_hse_project_hse_MclassInfo.h"
+#include "hsejni.h"
 
 void
 Java_com_micron_hse_1project_hse_MclassInfo_get(
     JNIEnv *env,
     jobject mclass_info_obj,
-    jlong   kvdb_handle,
-    jint    mclass)
+    jlong kvdb_handle,
+    jint mclass)
 {
+    hse_err_t err;
+    jstring path_str;
+    jobject path_obj;
+    jobjectArray var_args;
     struct hse_mclass_info info;
-    struct hse_kvdb       *kvdb = (struct hse_kvdb *)kvdb_handle;
+    struct hse_kvdb *kvdb = (struct hse_kvdb *)kvdb_handle;
 
-    const hse_err_t err = hse_kvdb_mclass_info_get(kvdb, mclass, &info);
+    err = hse_kvdb_mclass_info_get(kvdb, mclass, &info);
     if (err) {
         throw_new_hse_exception(env, err);
         return;
     }
 
-    const jstring path_str = (*env)->NewStringUTF(env, info.mi_path);
+    path_str = (*env)->NewStringUTF(env, info.mi_path);
     if ((*env)->ExceptionCheck(env))
         return;
-    const jobjectArray var_args =
-        (*env)->NewObjectArray(env, 0, globals.java.lang.String.class, NULL);
+    var_args = (*env)->NewObjectArray(env, 0, globals.java.lang.String.class, NULL);
     if ((*env)->ExceptionCheck(env))
         return;
-    const jobject path_obj = (*env)->CallStaticObjectMethod(
+    path_obj = (*env)->CallStaticObjectMethod(
         env,
         globals.java.nio.file.Paths.class,
         globals.java.nio.file.Paths.get,
