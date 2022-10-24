@@ -126,70 +126,6 @@ Java_com_micron_hse_1project_hse_KvsCursor_destroy(
 }
 
 jobject
-Java_com_micron_hse_1project_hse_KvsCursor_read__JI(
-    JNIEnv *env,
-    jobject cursor_obj,
-    jlong   cursor_handle,
-    jint    flags)
-{
-    (void)cursor_obj;
-
-    struct hse_kvs_cursor *cursor = (struct hse_kvs_cursor *)cursor_handle;
-
-    const void     *key;
-    size_t          key_len;
-    const void     *value;
-    size_t          value_len;
-    bool            eof;
-    const hse_err_t err =
-        hse_kvs_cursor_read(cursor, flags, &key, &key_len, &value, &value_len, &eof);
-
-    if (err) {
-        throw_new_hse_exception(env, err);
-        return NULL;
-    }
-
-    if (eof) {
-        (*env)->ThrowNew(env, globals.java.io.EOFException.class, "End of cursor reached");
-        return NULL;
-    }
-
-    jbyteArray key_array = (*env)->NewByteArray(env, key_len);
-    if (!key_array) {
-        (*env)->ThrowNew(
-            env,
-            globals.java.lang.OutOfMemoryError.class,
-            "Failed to allocate memory for key array");
-        return NULL;
-    }
-
-    jbyteArray value_array = (*env)->NewByteArray(env, value_len);
-    if (!value_array) {
-        (*env)->ThrowNew(
-            env,
-            globals.java.lang.OutOfMemoryError.class,
-            "Failed to allocate memory for value array");
-        return NULL;
-    }
-
-    (*env)->SetByteArrayRegion(env, key_array, 0, key_len, key);
-    (*env)->SetByteArrayRegion(env, value_array, 0, value_len, value);
-
-    /* Assert that no ArrayIndexOutOfBoundsException occurred. The byte arrays
-     * are constructed with known lengths, so the previous operations are
-     * infallible in theory.
-     */
-    assert(!(*env)->ExceptionCheck(env));
-
-    return (*env)->NewObject(
-        env,
-        globals.java.util.AbstractMap.SimpleImmutableEntry.class,
-        globals.java.util.AbstractMap.SimpleImmutableEntry.init,
-        key_array,
-        value_array);
-}
-
-jobject
 Java_com_micron_hse_1project_hse_KvsCursor_read__J_3BI_3BII(
     JNIEnv    *env,
     jobject    cursor_obj,
@@ -210,7 +146,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_read__J_3BI_3BII(
     size_t          key_len;
     size_t          value_len;
     bool            eof;
-    const hse_err_t err = hse_kvs_cursor_read_copy(
+    const hse_err_t err = hse_kvs_cursor_read(
         cursor,
         flags,
         key_buf_data,
@@ -278,7 +214,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_read__J_3BILjava_nio_ByteBuffer_2III(
     size_t          key_len;
     size_t          value_len;
     bool            eof;
-    const hse_err_t err = hse_kvs_cursor_read_copy(
+    const hse_err_t err = hse_kvs_cursor_read(
         cursor,
         flags,
         key_buf_data,
@@ -344,7 +280,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_read__JLjava_nio_ByteBuffer_2II_3BII(
     size_t          key_len;
     size_t          value_len;
     bool            eof;
-    const hse_err_t err = hse_kvs_cursor_read_copy(
+    const hse_err_t err = hse_kvs_cursor_read(
         cursor,
         flags,
         key_buf_data,
@@ -418,7 +354,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_read__JLjava_nio_ByteBuffer_2IILjava_
     size_t          key_len;
     size_t          value_len;
     bool            eof;
-    const hse_err_t err = hse_kvs_cursor_read_copy(
+    const hse_err_t err = hse_kvs_cursor_read(
         cursor,
         flags,
         key_buf_data,
@@ -467,9 +403,10 @@ Java_com_micron_hse_1project_hse_KvsCursor_seek__J_3BII(
 
     jbyte *key_data = key ? (*env)->GetByteArrayElements(env, key, NULL) : NULL;
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
-    const hse_err_t err = hse_kvs_cursor_seek(cursor, flags, key_data, key_len, &found, &found_len);
+    const hse_err_t err =
+        hse_kvs_cursor_seek(cursor, flags, key_data, key_len, found, sizeof(found), &found_len);
 
     if (key)
         (*env)->ReleaseByteArrayElements(env, key, key_data, JNI_ABORT);
@@ -479,7 +416,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seek__J_3BII(
         return NULL;
     }
 
-    if (!found)
+    if (found_len == 0)
         return NULL;
 
     jbyteArray found_key = (*env)->NewByteArray(env, found_len);
@@ -513,9 +450,10 @@ Java_com_micron_hse_1project_hse_KvsCursor_seek__JLjava_lang_String_2I(
         key_len = (*env)->GetStringUTFLength(env, key);
     }
 
-    const void     *found = NULL;
-    size_t          found_len = 0;
-    const hse_err_t err = hse_kvs_cursor_seek(cursor, flags, key_data, key_len, &found, &found_len);
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
+    size_t          found_len;
+    const hse_err_t err =
+        hse_kvs_cursor_seek(cursor, flags, key_data, key_len, found, sizeof(found), &found_len);
 
     if (key)
         (*env)->ReleaseStringUTFChars(env, key, key_data);
@@ -525,7 +463,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seek__JLjava_lang_String_2I(
         return NULL;
     }
 
-    if (!found)
+    if (found_len == 0)
         return NULL;
 
     jbyteArray found_key = (*env)->NewByteArray(env, found_len);
@@ -562,16 +500,17 @@ Java_com_micron_hse_1project_hse_KvsCursor_seek__JLjava_nio_ByteBuffer_2III(
         key_data = (uint8_t *)key_data + key_pos;
     }
 
-    const void     *found = NULL;
-    size_t          found_len = 0;
-    const hse_err_t err = hse_kvs_cursor_seek(cursor, flags, key_data, key_len, &found, &found_len);
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
+    size_t          found_len;
+    const hse_err_t err =
+        hse_kvs_cursor_seek(cursor, flags, key_data, key_len, found, sizeof(found), &found_len);
 
     if (err) {
         throw_new_hse_exception(env, err);
         return NULL;
     }
 
-    if (!found)
+    if (found_len == 0)
         return NULL;
 
     jbyteArray found_key = (*env)->NewByteArray(env, found_len);
@@ -603,9 +542,10 @@ Java_com_micron_hse_1project_hse_KvsCursor_seek__J_3BI_3BII(
 
     jbyte *key_data = key ? (*env)->GetByteArrayElements(env, key, NULL) : NULL;
 
-    const void     *found = NULL;
-    size_t          found_len = 0;
-    const hse_err_t err = hse_kvs_cursor_seek(cursor, flags, key_data, key_len, &found, &found_len);
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
+    size_t          found_len;
+    const hse_err_t err = hse_kvs_cursor_seek(
+        cursor, flags, key_data, key_len, found, sizeof(found), &found_len);
 
     if (key)
         (*env)->ReleaseByteArrayElements(env, key, key_data, JNI_ABORT);
@@ -615,7 +555,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seek__J_3BI_3BII(
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     if (found_buf) {
@@ -650,9 +590,10 @@ Java_com_micron_hse_1project_hse_KvsCursor_seek__J_3BILjava_nio_ByteBuffer_2III(
 
     jbyte *key_data = key ? (*env)->GetByteArrayElements(env, key, NULL) : NULL;
 
-    const void     *found = NULL;
-    size_t          found_len = 0;
-    const hse_err_t err = hse_kvs_cursor_seek(cursor, flags, key_data, key_len, &found, &found_len);
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
+    size_t          found_len;
+    const hse_err_t err =
+        hse_kvs_cursor_seek(cursor, flags, key_data, key_len, found, sizeof(found), &found_len);
 
     if (key)
         (*env)->ReleaseByteArrayElements(env, key, key_data, JNI_ABORT);
@@ -662,7 +603,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seek__J_3BILjava_nio_ByteBuffer_2III(
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     if (found_buf) {
@@ -698,9 +639,10 @@ Java_com_micron_hse_1project_hse_KvsCursor_seek__JLjava_lang_String_2_3BII(
         key_len = (*env)->GetStringUTFLength(env, key);
     }
 
-    const void     *found = NULL;
-    size_t          found_len = 0;
-    const hse_err_t err = hse_kvs_cursor_seek(cursor, flags, key_data, key_len, &found, &found_len);
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
+    size_t          found_len;
+    const hse_err_t err =
+        hse_kvs_cursor_seek(cursor, flags, key_data, key_len, found, sizeof(found), &found_len);
 
     if (key)
         (*env)->ReleaseStringUTFChars(env, key, key_data);
@@ -710,7 +652,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seek__JLjava_lang_String_2_3BII(
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     if (found_buf) {
@@ -743,9 +685,10 @@ Java_com_micron_hse_1project_hse_KvsCursor_seek__JLjava_lang_String_2Ljava_nio_B
         key_len = (*env)->GetStringUTFLength(env, key);
     }
 
-    const void     *found = NULL;
-    size_t          found_len = 0;
-    const hse_err_t err = hse_kvs_cursor_seek(cursor, flags, key_data, key_len, &found, &found_len);
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
+    size_t          found_len;
+    const hse_err_t err =
+        hse_kvs_cursor_seek(cursor, flags, key_data, key_len, found, sizeof(found), &found_len);
 
     if (key)
         (*env)->ReleaseStringUTFChars(env, key, key_data);
@@ -755,7 +698,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seek__JLjava_lang_String_2Ljava_nio_B
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     if (found_buf) {
@@ -794,16 +737,17 @@ Java_com_micron_hse_1project_hse_KvsCursor_seek__JLjava_nio_ByteBuffer_2II_3BII(
         key_data = (uint8_t *)key_data + key_pos;
     }
 
-    const void     *found = NULL;
-    size_t          found_len = 0;
-    const hse_err_t err = hse_kvs_cursor_seek(cursor, flags, key_data, key_len, &found, &found_len);
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
+    size_t          found_len;
+    const hse_err_t err =
+        hse_kvs_cursor_seek(cursor, flags, key_data, key_len, found, sizeof(found), &found_len);
 
     if (err) {
         throw_new_hse_exception(env, err);
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     if (found_buf) {
@@ -845,16 +789,17 @@ Java_com_micron_hse_1project_hse_KvsCursor_seek__JLjava_nio_ByteBuffer_2IILjava_
         key_data = (uint8_t *)key_data + key_pos;
     }
 
-    const void     *found = NULL;
-    size_t          found_len = 0;
-    const hse_err_t err = hse_kvs_cursor_seek(cursor, flags, key_data, key_len, &found, &found_len);
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
+    size_t          found_len;
+    const hse_err_t err =
+        hse_kvs_cursor_seek(cursor, flags, key_data, key_len, found, sizeof(found), &found_len);
 
     if (err) {
         throw_new_hse_exception(env, err);
         return 0;
     }
 
-    if (!found)
+    if (found_len)
         return 0;
 
     if (found_buf) {
@@ -889,7 +834,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BI_3BII(
     jbyte *filter_max_data =
         filter_max ? (*env)->GetByteArrayElements(env, filter_max, NULL) : NULL;
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -898,7 +843,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BI_3BII(
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_min)
@@ -911,7 +857,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BI_3BII(
         return NULL;
     }
 
-    if (!found)
+    if (found_len == 0)
         return NULL;
 
     jbyteArray found_key = (*env)->NewByteArray(env, found_len);
@@ -950,7 +896,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_lang_String_2I(
         filter_max_len = 0;
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -959,7 +905,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_lang_String_2I(
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (err) {
@@ -967,7 +914,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_lang_String_2I(
         return NULL;
     }
 
-    if (!found)
+    if (found_len == 0)
         return NULL;
 
     jbyteArray found_key = (*env)->NewByteArray(env, found_len);
@@ -1008,7 +955,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_nio_ByteBuffer_
         filter_max_data = (uint8_t *)filter_max_data + filter_max_pos;
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -1017,7 +964,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_nio_ByteBuffer_
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_min)
@@ -1028,7 +976,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_nio_ByteBuffer_
         return NULL;
     }
 
-    if (!found)
+    if (found_len == 0)
         return NULL;
 
     jbyteArray found_key = (*env)->NewByteArray(env, found_len);
@@ -1067,7 +1015,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2_3BII(
     jbyte *filter_max_data =
         filter_max ? (*env)->GetByteArrayElements(env, filter_max, NULL) : NULL;
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -1076,7 +1024,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2_3BII(
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_min)
@@ -1089,7 +1038,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2_3BII(
         return NULL;
     }
 
-    if (!found)
+    if (found_len == 0)
         return NULL;
 
     jbyteArray found_key = (*env)->NewByteArray(env, found_len);
@@ -1131,7 +1080,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         filter_max_len = (*env)->GetStringUTFLength(env, filter_max);
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -1140,7 +1089,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_min)
@@ -1153,7 +1103,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         return NULL;
     }
 
-    if (!found)
+    if (found_len == 0)
         return NULL;
 
     jbyteArray found_key = (*env)->NewByteArray(env, found_len);
@@ -1196,7 +1146,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         filter_max_data = (uint8_t *)filter_max_data + filter_max_pos;
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -1205,7 +1155,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (err) {
@@ -1213,7 +1164,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         return NULL;
     }
 
-    if (!found)
+    if (found_len == 0)
         return NULL;
 
     jbyteArray found_key = (*env)->NewByteArray(env, found_len);
@@ -1255,7 +1206,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_
     jbyte *filter_max_data =
         filter_max ? (*env)->GetByteArrayElements(env, filter_max, NULL) : NULL;
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -1264,7 +1215,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_max)
@@ -1275,7 +1227,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_
         return NULL;
     }
 
-    if (!found)
+    if (found_len == 0)
         return NULL;
 
     jbyteArray found_key = (*env)->NewByteArray(env, found_len);
@@ -1320,7 +1272,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         filter_max_len = (*env)->GetStringUTFLength(env, filter_max);
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -1329,7 +1281,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (err) {
@@ -1337,7 +1290,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         return NULL;
     }
 
-    if (!found)
+    if (found_len == 0)
         return NULL;
 
     jbyteArray found_key = (*env)->NewByteArray(env, found_len);
@@ -1385,7 +1338,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         filter_max_data = (uint8_t *)filter_max_data + filter_max_pos;
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -1394,7 +1347,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (err) {
@@ -1402,7 +1356,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         return NULL;
     }
 
-    if (!found)
+    if (found_len == 0)
         return NULL;
 
     jbyteArray found_key = (*env)->NewByteArray(env, found_len);
@@ -1439,7 +1393,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BI_3BI_3BII(
     jbyte *filter_max_data =
         filter_min ? (*env)->GetByteArrayElements(env, filter_max, NULL) : NULL;
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -1448,7 +1402,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BI_3BI_3BII(
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_min)
@@ -1461,7 +1416,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BI_3BI_3BII(
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     (*env)->SetByteArrayRegion(env, found_buf, 0, MIN(found_buf_sz, (jint)found_len), found);
@@ -1498,7 +1453,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BI_3BILjava_nio_ByteBuf
     jbyte *filter_max_data =
         filter_min ? (*env)->GetByteArrayElements(env, filter_max, NULL) : NULL;
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -1507,7 +1462,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BI_3BILjava_nio_ByteBuf
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_min)
@@ -1520,7 +1476,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BI_3BILjava_nio_ByteBuf
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     if (found_buf) {
@@ -1560,7 +1516,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_lang_String_2_3
         filter_max_len = (*env)->GetStringUTFLength(env, filter_max);
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -1569,7 +1525,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_lang_String_2_3
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_min)
@@ -1582,7 +1539,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_lang_String_2_3
         return 0;
     }
 
-    if (!found)
+    if (found_len)
         return 0;
 
     (*env)->SetByteArrayRegion(env, found_buf, 0, MIN(found_buf_sz, (jint)found_len), found);
@@ -1622,7 +1579,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_lang_String_2Lj
         filter_max_len = (*env)->GetStringUTFLength(env, filter_max);
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -1631,7 +1588,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_lang_String_2Lj
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_min)
@@ -1644,7 +1602,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_lang_String_2Lj
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     if (found_buf) {
@@ -1688,7 +1646,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_nio_ByteBuffer_
         filter_max_data = (uint8_t *)filter_max_data + filter_max_pos;
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -1697,7 +1655,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_nio_ByteBuffer_
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_min)
@@ -1708,7 +1667,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_nio_ByteBuffer_
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     (*env)->SetByteArrayRegion(env, found_buf, 0, MIN(found_buf_sz, (jint)found_len), found);
@@ -1752,7 +1711,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_nio_ByteBuffer_
         filter_max_data = (uint8_t *)filter_max_data + filter_max_pos;
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -1761,7 +1720,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_nio_ByteBuffer_
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_min)
@@ -1772,7 +1732,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_nio_ByteBuffer_
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     if (found_buf) {
@@ -1813,7 +1773,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2_3BI_3
     jbyte *filter_max_data =
         filter_max ? (*env)->GetByteArrayElements(env, filter_max, NULL) : NULL;
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -1822,7 +1782,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2_3BI_3
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_min)
@@ -1835,7 +1796,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2_3BI_3
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     (*env)->SetByteArrayRegion(env, found_buf, 0, MIN(found_buf_sz, (jint)found_len), found);
@@ -1876,7 +1837,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2_3BILj
     jbyte *filter_max_data =
         filter_max ? (*env)->GetByteArrayElements(env, filter_max, NULL) : NULL;
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -1885,7 +1846,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2_3BILj
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_min)
@@ -1898,7 +1860,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2_3BILj
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     if (found_buf) {
@@ -1942,7 +1904,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         filter_max_len = (*env)->GetStringUTFLength(env, filter_max);
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -1951,7 +1913,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_min)
@@ -1964,7 +1927,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     (*env)->SetByteArrayRegion(env, found_buf, 0, MIN(found_buf_sz, (jint)found_len), found);
@@ -2008,7 +1971,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         filter_max_len = (*env)->GetStringUTFLength(env, filter_max);
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -2017,7 +1980,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_min)
@@ -2030,7 +1994,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     if (found_buf) {
@@ -2077,7 +2041,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         filter_max_data = (uint8_t *)filter_max_data + filter_max_pos;
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -2086,7 +2050,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_min)
@@ -2097,7 +2062,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     (*env)->SetByteArrayRegion(env, found_buf, 0, MIN(found_buf_sz, (jint)found_len), found);
@@ -2144,7 +2109,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         filter_max_data = (uint8_t *)filter_max_data + filter_max_pos;
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -2153,7 +2118,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_min)
@@ -2164,7 +2130,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     if (found_buf) {
@@ -2208,7 +2174,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_
     jbyte *filter_max_data =
         filter_min ? (*env)->GetByteArrayElements(env, filter_max, NULL) : NULL;
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -2217,7 +2183,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_max)
@@ -2228,7 +2195,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     (*env)->SetByteArrayRegion(env, found_buf, 0, MIN(found_buf_sz, (jint)found_len), found);
@@ -2272,7 +2239,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_
     jbyte *filter_max_data =
         filter_min ? (*env)->GetByteArrayElements(env, filter_max, NULL) : NULL;
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -2281,7 +2248,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_max)
@@ -2292,7 +2260,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     if (found_buf) {
@@ -2339,7 +2307,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         filter_max_len = (*env)->GetStringUTFLength(env, filter_max);
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -2348,7 +2316,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_max)
@@ -2359,7 +2328,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     (*env)->SetByteArrayRegion(env, found_buf, 0, MIN(found_buf_sz, (jint)found_len), found);
@@ -2406,7 +2375,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         filter_max_len = (*env)->GetStringUTFLength(env, filter_max);
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -2415,7 +2384,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (filter_max)
@@ -2426,7 +2396,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     if (found_buf) {
@@ -2476,7 +2446,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         filter_max_data = (uint8_t *)filter_max_data + filter_max_pos;
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -2485,7 +2455,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (err) {
@@ -2493,7 +2464,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     (*env)->SetByteArrayRegion(env, found_buf, 0, MIN(found_buf_sz, (jint)found_len), found);
@@ -2543,7 +2514,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         filter_max_data = (uint8_t *)filter_max_data + filter_max_pos;
     }
 
-    const void     *found;
+    jbyte           found[HSE_KVS_KEY_LEN_MAX];
     size_t          found_len;
     const hse_err_t err = hse_kvs_cursor_seek_range(
         cursor,
@@ -2552,7 +2523,8 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         filter_min_len,
         filter_max_data,
         filter_max_len,
-        &found,
+        found,
+        sizeof(found),
         &found_len);
 
     if (err) {
@@ -2560,7 +2532,7 @@ Java_com_micron_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IIL
         return 0;
     }
 
-    if (!found)
+    if (found_len == 0)
         return 0;
 
     if (found_buf) {

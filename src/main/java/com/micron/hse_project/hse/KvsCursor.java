@@ -65,8 +65,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
     private static native long create(long kvsHandle, ByteBuffer filter, int filterLen,
         int filterPos, int flags, long txnHandle) throws HseException;
     private native void destroy(long cursorHandle) throws HseException;
-    private native SimpleImmutableEntry<byte[], byte[]> read(long cursorHandle, int flags)
-            throws EOFException, HseException;
     private native SimpleImmutableEntry<Integer, Integer> read(long cursorHandle, byte[] keyBuf,
         int keyBufSz, byte[] valueBuf, int valueBufSz, int flags) throws EOFException, HseException;
     private native SimpleImmutableEntry<Integer, Integer> read(long cursorHandle, byte[] keyBuf,
@@ -166,18 +164,6 @@ public final class KvsCursor extends NativeObject implements AutoCloseable {
         int filterMinPos, ByteBuffer filterMax, int filterMaxLen, int filterMaxPos,
         ByteBuffer foundBuf, int foundBufSz, int foundBufPos, int flags) throws HseException;
     private native void updateView(long cursorHandle) throws HseException;
-
-    /**
-     * Refer to {@link #read(byte[], byte[])}.
-     *
-     * @return Key-value pair.
-     * @throws EOFException Cursor has no more elements to read.
-     * @throws HseException Underlying C function returned a non-zero value
-     */
-    public SimpleImmutableEntry<byte[], byte[]> read()
-            throws EOFException, HseException {
-        return read(this.handle, 0);
-    }
 
     /**
      * Iteratively access the elements pointed to by the cursor.
