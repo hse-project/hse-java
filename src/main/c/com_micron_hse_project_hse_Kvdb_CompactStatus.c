@@ -10,20 +10,21 @@
 #include <hse/experimental.h>
 #endif
 
-#include "hsejni.h"
 #include "com_micron_hse_project_hse_Kvdb_CompactStatus.h"
+#include "hsejni.h"
 
 void
 Java_com_micron_hse_1project_hse_Kvdb_00024CompactStatus_get(
     JNIEnv *env,
     jobject compact_status_obj,
-    jlong   kvdb_handle)
+    jlong kvdb_handle)
 {
 #ifdef HSE_JAVA_EXPERIMENTAL
+    hse_err_t err;
     struct hse_kvdb_compact_status compact_status;
-    struct hse_kvdb               *kvdb = (struct hse_kvdb *)kvdb_handle;
+    struct hse_kvdb *kvdb = (struct hse_kvdb *)kvdb_handle;
 
-    const hse_err_t err = hse_kvdb_compact_status_get(kvdb, &compact_status);
+    err = hse_kvdb_compact_status_get(kvdb, &compact_status);
     if (err) {
         throw_new_hse_exception(env, err);
         return;

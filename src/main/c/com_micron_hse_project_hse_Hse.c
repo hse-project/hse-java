@@ -9,29 +9,31 @@
 #include <hse/hse.h>
 #include <jni.h>
 
-#include "hsejni.h"
 #include "com_micron_hse_project_hse_Hse.h"
+#include "hsejni.h"
 
 jstring
 Java_com_micron_hse_1project_hse_Hse_cgetParam(JNIEnv *env, jclass hse_cls, jstring param)
 {
+    char *buf = NULL;
+    hse_err_t err = 0;
+    size_t needed_sz;
+    jstring value = NULL;
+    const char *param_chars = NULL;;
+
     (void)env;
     (void)hse_cls;
 
-    hse_err_t err = 0;
-    jstring   value = NULL;
-    char     *buf = NULL;
+    if (param)
+        param_chars = (*env)->GetStringUTFChars(env, param, NULL);
 
-    const char *param_chars = param ? (*env)->GetStringUTFChars(env, param, NULL) : NULL;
-
-    size_t needed_sz;
     err = hse_param_get(param_chars, NULL, 0, &needed_sz);
     if (err) {
         throw_new_hse_exception(env, err);
         goto out;
     }
 
-    buf = malloc(needed_sz + 1);
+    buf = malloc((needed_sz + 1) * sizeof(*buf));
     if (!buf) {
         (*env)->ThrowNew(
             env,
@@ -61,16 +63,17 @@ out:
 
 void
 Java_com_micron_hse_1project_hse_Hse_cinit(
-    JNIEnv      *env,
-    jclass       hse_cls,
-    jstring      config,
+    JNIEnv *env,
+    jclass hse_cls,
+    jstring config,
     jobjectArray params)
 {
-    (void)hse_cls;
-
-    const char  *config_chars = NULL;
-    jsize        paramc;
+    jsize paramc;
+    hse_err_t err;
     const char **paramv;
+    const char *config_chars = NULL;
+
+    (void)hse_cls;
 
     if (config)
         config_chars = (*env)->GetStringUTFChars(env, config, NULL);
@@ -79,7 +82,7 @@ Java_com_micron_hse_1project_hse_Hse_cinit(
     if ((*env)->ExceptionCheck(env))
         return;
 
-    const hse_err_t err = hse_init(config_chars, paramc, paramv);
+    err = hse_init(config_chars, paramc, paramv);
 
     if (config)
         (*env)->ReleaseStringUTFChars(env, config, config_chars);

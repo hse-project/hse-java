@@ -173,8 +173,8 @@ jobs:
       - name: Setup
         if: ${{ steps.to-skip.outputs.skip == 'false' }}
         run: |
-          meson setup builddir --buildtype=${{ matrix.buildtype }} $CROSS_ARGS \
-            --werror
+          meson setup builddir --fatal-meson-warnings \
+            --buildtype=${{ matrix.buildtype }} $CROSS_ARGS --werror
 
       - name: Build
         if: ${{ steps.to-skip.outputs.skip == 'false' }}

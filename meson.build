@@ -51,6 +51,12 @@ hse_dep = dependency(
     ]
 )
 
+add_project_arguments(cc.get_supported_arguments(
+        '-Wdeclaration-after-statement'
+    ),
+    language: 'c'
+)
+
 subdir('src')
 subdir('docs')
 
