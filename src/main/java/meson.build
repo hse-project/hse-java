@@ -1,19 +1,40 @@
 java_sources = files(
-    'com/micron/hse_project/hse/Hse.java',
-    'com/micron/hse_project/hse/HseException.java',
-    'com/micron/hse_project/hse/Kvdb.java',
-    'com/micron/hse_project/hse/KvdbTransaction.java',
-    'com/micron/hse_project/hse/Kvs.java',
-    'com/micron/hse_project/hse/KvsCursor.java',
-    'com/micron/hse_project/hse/Limits.java',
-    'com/micron/hse_project/hse/Mclass.java',
-    'com/micron/hse_project/hse/MclassInfo.java',
-    'com/micron/hse_project/hse/NativeObject.java',
-    'com/micron/hse_project/hse/Version.java',
+    '@0@/@1@/Hse.java'.format(group_id.replace('.', '/'), artifact_id),
+    '@0@/@1@/HseException.java'.format(group_id.replace('.', '/'), artifact_id),
+    '@0@/@1@/Kvdb.java'.format(group_id.replace('.', '/'), artifact_id),
+    '@0@/@1@/KvdbTransaction.java'.format(group_id.replace('.', '/'), artifact_id),
+    '@0@/@1@/Kvs.java'.format(group_id.replace('.', '/'), artifact_id),
+    '@0@/@1@/KvsCursor.java'.format(group_id.replace('.', '/'), artifact_id),
+    '@0@/@1@/Limits.java'.format(group_id.replace('.', '/'), artifact_id),
+    '@0@/@1@/Mclass.java'.format(group_id.replace('.', '/'), artifact_id),
+    '@0@/@1@/MclassInfo.java'.format(group_id.replace('.', '/'), artifact_id),
+    '@0@/@1@/NativeObject.java'.format(group_id.replace('.', '/'), artifact_id),
+    '@0@/@1@/Version.java'.format(group_id.replace('.', '/'), artifact_id),
 )
 
-hse_jar = jar(
-    fs.stem(jar_filename),
-    java_sources,
-    install: true
+hse_jar = custom_target(
+    'jar',
+    build_by_default: true,
+    input: [
+        java_sources,
+        pom_file,
+    ],
+    output: [
+        jar_filename,
+    ],
+    command: [
+        'mvn',
+        '-f',
+        pom_file,
+        '-P',
+        'meson',
+        'package',
+        '--quiet',
+        '-DforceStdout',
+        '-Dmaven.test.skip=true',
+        '-Dmeson.build_root=@0@'.format(meson.project_build_root()),
+        '-Dmeson.current_build_dir=@0@'.format(meson.current_build_dir()),
+    ],
+    install: true,
+    install_dir: get_option('datadir') / 'java'
 )

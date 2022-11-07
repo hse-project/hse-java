@@ -1,7 +1,17 @@
 project(
     'hse-java',
-    ['c', 'java'],
-    version: files('VERSION'),
+    'c',
+    'java',
+    version: run_command(
+        'mvn',
+        '-f',
+        meson.project_source_root() / 'pom.xml',
+        'help:evaluate',
+        '-Dexpression=project.version',
+        '--quiet',
+        '-DforceStdout',
+        check: true
+    ).stdout().strip(),
     license: 'Apache-2.0',
     default_options: [
         'prefix=/opt/hse',
@@ -16,15 +26,11 @@ project(
     meson_version: '>= 0.62.0'
 )
 
-package = 'com.micron.hse_project.hse'
-
 version_components = meson.project_version().split('.')
 
-hse_java_major_version = version_components[0]
-hse_java_minor_version = version_components[1]
-hse_java_patch_version = version_components[2]
-
-jar_filename = 'hse-@0@.jar'.format(meson.project_version())
+hse_java_major_version = version_components[0].to_int()
+hse_java_minor_version = version_components[1].to_int()
+hse_java_patch_version = version_components[2].to_int()
 
 fs = import('fs')
 javamod = import('java')
@@ -32,13 +38,41 @@ javamod = import('java')
 cc = meson.get_compiler('c')
 javac = meson.get_compiler('java')
 
-mvn = find_program('mvn', required: get_option('tests'), disabler: true)
+mvn = find_program('mvn')
+sh = find_program('sh', required: get_option('tests'))
 python = find_program('python3', required: get_option('tests'))
+
+pom_file = meson.project_source_root() / 'pom.xml'
+group_id = run_command(
+    'mvn',
+    '-f',
+    pom_file,
+    'help:evaluate',
+    '-Dexpression=project.groupId',
+    '--quiet',
+    '-DforceStdout',
+    check: true
+).stdout().strip()
+artifact_id = run_command(
+    'mvn',
+    '-f',
+    pom_file,
+    'help:evaluate',
+    '-Dexpression=project.artifactId',
+    '--quiet',
+    '-DforceStdout',
+    check: true
+).stdout().strip()
+package = '@0@.@1@'.format(group_id, artifact_id)
+jar_filename = '@0@-@1@.jar'.format(artifact_id, meson.project_version())
 
 jni_dep = dependency('jni', version: '>=1.8.0')
 hse_dep = dependency(
-    'hse-3',
-    version: ['>=3.0.0', '<4.0.0'],
+    'hse-@0@'.format(hse_java_major_version),
+    version: [
+        '>=@0@.0.0'.format(hse_java_major_version),
+        '<@0@.0.0'.format(hse_java_major_version + 1),
+    ],
     default_options: [
         'warning_level=0',
         'default_library=static',
@@ -58,31 +92,33 @@ add_project_arguments(cc.get_supported_arguments(
 )
 
 subdir('src')
-subdir('docs')
-
-if mvn.found()
-    if get_option('repo') == ''
-        repo = 'file://' + run_command(
-            mvn,
-            'help:evaluate',
-            '-Dexpression=settings.localRepository',
-            '--quiet',
-            '-DforceStdout',
-            check: true
-        ).stdout().strip()
-    else
-        repo = get_option('repo')
-    endif
-
-    meson.add_install_script(
-            mvn,
-            'deploy:deploy-file',
-            '-Durl=' + repo,
-            '-Dmaven.test.skip=true',
-            '-DpomFile=' + meson.project_source_root() / 'pom.xml',
-            '-Dfile=' + hse_jar.full_path()
-    )
+if get_option('docs')
+    subdir('docs')
 endif
+
+if get_option('repo') == ''
+    repo = 'file://' + run_command(
+        mvn,
+        'help:evaluate',
+        '-Dexpression=settings.localRepository',
+        '--quiet',
+        '-DforceStdout',
+        check: true
+    ).stdout().strip()
+else
+    repo = get_option('repo')
+endif
+
+meson.add_install_script(
+    mvn,
+    '-f',
+    pom_file,
+    'deploy:deploy-file',
+    '-Dmaven.test.skip=true',
+    '-Durl=' + repo,
+    '-DpomFile=' + pom_file,
+    '-Dfile=' + hse_jar.full_path()
+)
 
 run_target(
     'checkoss',
@@ -113,7 +149,7 @@ run_target(
     command: [
         mvn,
         '-f',
-        meson.project_source_root() / 'pom.xml',
+        pom_file,
         'checkstyle:check'
     ]
 )
