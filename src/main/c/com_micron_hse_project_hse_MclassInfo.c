@@ -44,14 +44,14 @@ Java_com_micron_hse_1project_hse_MclassInfo_get(
     if ((*env)->ExceptionCheck(env))
         return;
 
-    (*env)->SetIntField(
+    (*env)->SetLongField(
         env,
         mclass_info_obj,
         globals.com.micron.hse_project.hse.MclassInfo.allocatedBytes,
         info.mi_allocated_bytes);
     if ((*env)->ExceptionCheck(env))
         return;
-    (*env)->SetIntField(
+    (*env)->SetLongField(
         env,
         mclass_info_obj,
         globals.com.micron.hse_project.hse.MclassInfo.usedBytes,
