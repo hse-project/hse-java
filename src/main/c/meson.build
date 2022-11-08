@@ -1,12 +1,12 @@
 c_sources = files(
-    'com_micron_hse_project_hse_Hse.c',
-    'com_micron_hse_project_hse_Kvdb.c',
-    'com_micron_hse_project_hse_Kvdb_CompactStatus.c',
-    'com_micron_hse_project_hse_KvdbTransaction.c',
-    'com_micron_hse_project_hse_Kvs.c',
-    'com_micron_hse_project_hse_KvsCursor.c',
-    'com_micron_hse_project_hse_MclassInfo.c',
-    'com_micron_hse_project_hse_Version.c',
+    '@0@_@1@_Hse.c'.format(group_id.replace('.', '_'), artifact_id),
+    '@0@_@1@_Kvdb.c'.format(group_id.replace('.', '_'), artifact_id),
+    '@0@_@1@_Kvdb_CompactStatus.c'.format(group_id.replace('.', '_'), artifact_id),
+    '@0@_@1@_KvdbTransaction.c'.format(group_id.replace('.', '_'), artifact_id),
+    '@0@_@1@_Kvs.c'.format(group_id.replace('.', '_'), artifact_id),
+    '@0@_@1@_KvsCursor.c'.format(group_id.replace('.', '_'), artifact_id),
+    '@0@_@1@_MclassInfo.c'.format(group_id.replace('.', '_'), artifact_id),
+    '@0@_@1@_Version.c'.format(group_id.replace('.', '_'), artifact_id),
     'hsejni.c'
 )
 
@@ -32,7 +32,8 @@ endif
 
 hsejni = shared_module(
     'hsejni-@0@'.format(hse_java_major_version),
-    [c_sources, native_headers],
+    c_sources,
+    native_headers,
     c_args: c_args,
     include_directories: include_directories('.'),
     dependencies: [
