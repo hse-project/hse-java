@@ -173,7 +173,13 @@ jobs:
       - name: Setup
         if: ${{ steps.to-skip.outputs.skip == 'false' }}
         run: |
-          meson setup builddir --fatal-meson-warnings \
+          MESON_ARGS=
+          if [ "${{ matrix.image }}" = "ubuntu-18.04" ]; then
+            # javadoc is not available on Ubuntu 18.04
+            MESON_ARGS="-Ddocs=false"
+          fi
+
+          meson setup builddir --fatal-meson-warnings $MESON_ARGS \
             --buildtype=${{ matrix.buildtype }} $CROSS_ARGS --werror
 
       - name: Build
