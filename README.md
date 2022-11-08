@@ -42,8 +42,8 @@ Add something like the following to your `pom.xml` or equivalent file:
 
 ```xml
 <dependency>
-  <groupId>com.micron</groupId>
-  <artifactId>hse</groupeId>
+  <groupId>com.micron.hse_project</groupId>
+  <artifactId>hse</artifactId>
   <version>${hse.version}</version>
 <dependency>
 ```
