@@ -1,4 +1,4 @@
-option('docs', type: 'feature', value: 'auto',
+option('docs', type: 'boolean', value: true,
     description: 'Build the documentation')
 option('tests', type: 'boolean', value: true,
     description: 'Build tests')

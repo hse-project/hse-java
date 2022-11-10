@@ -3,19 +3,67 @@
    http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <name>Heterogeneous-Memory Storage Engine Java Bindings</name>
+  <description>HSE is a fast embeddable key-value store designed for SSDs and persistent memory.</description>
+  <url>https://github.com/hse-project</url>
+
   <groupId>com.micron.hse_project</groupId>
   <artifactId>hse</artifactId>
-  <!-- if updated, update meson.build -->
   <version>3.0.0</version>
 
+  <licenses>
+    <license>
+      <name>The Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:https://github.com/hse-project/hse-java.git</connection>
+    <developerConnection>scm:git:ssh://github.com:hse-project/hse-java.git</developerConnection>
+    <url>https://github.com/hse-project/hse-java</url>
+  </scm>
+
+  <organization>
+    <name>Micron Technology, Inc.</name>
+    <url>https://micron.com</url>
+  </organization>
+
+  <developers>
+    <developer>
+      <id>hse-project</id>
+      <organization>Micron Technology, Inc.</organization>
+      <organizationUrl>https://micron.com</organizationUrl>
+      <url>https://github.com/hse-project</url>
+    </developer>
+  </developers>
+
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>https://github.com/hse-project/hse-java/issues</url>
+  </issueManagement>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jnr-constants.version>0.10.3</jnr-constants.version>
-    <junit.version>5.9.1</junit.version>
-    <surefire-plugin.version>2.22.2</surefire-plugin.version>
     <compiler-plugin.version>3.10.1</compiler-plugin.version>
     <checkstyle-plugin.version>3.2.0</checkstyle-plugin.version>
     <checkstyle.version>10.4</checkstyle.version>
+    <gpg-plugin.version>3.0.1</gpg-plugin.version>
+    <jar-plugin.version>3.3.0</jar-plugin.version>
+    <javadoc-plugin.version>3.4.1</javadoc-plugin.version>
+    <jnr-constants.version>0.10.3</jnr-constants.version>
+    <junit.version>5.9.1</junit.version>
+    <nexus-staging-plugin.version>1.6.13</nexus-staging-plugin.version>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <source-plugin.version>3.2.1</source-plugin.version>
+    <surefire-plugin.version>2.22.2</surefire-plugin.version>
   </properties>
 
   <dependencyManagement>
@@ -31,22 +79,100 @@
 
   <profiles>
     <profile>
-      <!-- Intended for Meson use only -->
       <id>meson</id>
-      <activation>
-        <property>
-          <name>meson.build.dir</name>
-        </property>
-      </activation>
       <build>
+        <directory>${meson.build_root}</directory>
         <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>${jar-plugin.version}</version>
+            <configuration>
+              <outputDirectory>${meson.current_build_dir}</outputDirectory>
+            </configuration>
+          </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <version>${surefire-plugin.version}</version>
             <configuration>
-              <argLine>-Djava.library.path=${meson.build.dir}/src/main/c</argLine>
+              <argLine>-Djava.library.path=${meson.build_root}/src/main/c</argLine>
             </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${javadoc-plugin.version}</version>
+            <configuration>
+              <outputDirectory>${meson.current_build_dir}/apidocs</outputDirectory>
+              <reportOutputDirectory>${meson.current_build_dir}</reportOutputDirectory>
+              <show>public</show>
+              <source>8</source>
+              <use>false</use>
+              <validateLinks>true</validateLinks>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>${source-plugin.version}</version>
+            <configuration>
+              <excludes>
+                <exclude>meson.build</exclude>
+              </excludes>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${javadoc-plugin.version}</version>
+            <configuration>
+              <show>public</show>
+              <source>8</source>
+              <use>false</use>
+              <validateLinks>true</validateLinks>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>${gpg-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <configuration>
+                  <keyname>${gpg.keyname}</keyname>
+                  <passphraseServerId>${gpg.keyname}</passphraseServerId>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>
@@ -74,7 +200,13 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${compiler-plugin.version}</version>
         <configuration>
+          <compilerArgs>
+            <arg>-Xlint:all</arg>
+            <arg>-Xdoclint:all</arg>
+          </compilerArgs>
           <source>1.8</source>
+          <showDeprecation>true</showDeprecation>
+          <showWarnings>true</showWarnings>
           <target>1.8</target>
         </configuration>
       </plugin>
@@ -107,6 +239,17 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>${nexus-staging-plugin.version}</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>ossrh</serverId>
+          <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>true</autoReleaseAfterClose>
+        </configuration>
       </plugin>
     </plugins>
   </build>

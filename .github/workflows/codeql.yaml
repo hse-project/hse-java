@@ -79,7 +79,7 @@ jobs:
         run: |
           meson setup builddir --fatal-meson-warnings --werror \
             -Dwrap_mode=nofallback -Dforce_fallback_for=hse,cjson \
-            -Ddocs=disabled
+            -Ddocs=false
 
       - name: Build
         run: |

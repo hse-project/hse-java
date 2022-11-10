@@ -1,58 +1,41 @@
-javadoc = find_program('javadoc', required: get_option('docs'), disabler: true)
-
 javadocs = custom_target(
-    'javadoc',
+    'javadocs',
     build_by_default: true,
-    input: java_sources,
-    output: 'output',
-    command: [
-        javadoc,
-        '-d',
-        meson.current_build_dir() / 'output',
-        '-classpath',
-        meson.project_source_root() / 'src/main/java',
-        '-windowtitle',
-        'HSE Java Bindings',
-        '-source',
-        '8',
-        '-quiet',
-        '-encoding',
-        'utf-8',
-        '-charset',
-        'utf-8',
-        '-docencoding',
-        'utf-8',
-        '-keywords',
-        javac.version().version_compare('>=11.0.0') ? [
-            '--show-types',
-            'public',
-            '--show-members',
-            'public',
-            '--show-packages',
-            'exported',
-            '--show-module-contents',
-            'api',
-        ] : [],
-        package,
-        '@INPUT@',
+    input: [
+        java_sources,
+        pom_file,
     ],
-    depend_files: files(
-        meson.project_source_root() / 'src/main/java/com/micron/hse_project/hse/package-info.java'
-    )
+    output: [
+        'apidocs',
+    ],
+    command: [
+        mvn,
+        '-f',
+        pom_file,
+        '-P',
+        'meson',
+        'javadoc:javadoc-no-fork',
+        '--quiet',
+        '-DforceStdout',
+        '-Dmeson.build_root=@0@'.format(meson.project_build_root()),
+        '-Dmeson.current_build_dir=@0@'.format(meson.current_build_dir()),
+    ],
+    install: true,
+    install_dir: get_option('datadir') / 'javadoc' / 'hse-@0@'.format(hse_java_major_version)
 )
 
 if python.found()
     run_target(
         'javadocs-serve',
         command: [
-            find_program('sh', required: false, disabler: true),
+            sh,
             '-c',
             ' '.join([
                 python.full_path(),
                 '-m',
                 'http.server',
                 '--directory',
-                meson.current_build_dir() / 'output',
+                meson.current_build_dir() / 'apidocs',
                 '"${HSE_JAVA_JAVADOC_SERVE_PORT:-0}"',
             ])
         ],
