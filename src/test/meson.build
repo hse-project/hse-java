@@ -15,6 +15,11 @@ add_test_setup(
 )
 
 add_test_setup(
+    'all',
+    exe_wrapper: wrapper
+)
+
+add_test_setup(
     'ci',
     exe_wrapper: wrapper
 )
