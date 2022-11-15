@@ -209,6 +209,22 @@
           <showWarnings>true</showWarnings>
           <target>1.8</target>
         </configuration>
+        <executions>
+          <execution>
+            <id>test-compile</id>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+            <configuration>
+              <compilerArgs>
+                <arg>-Xlint:all</arg>
+              </compilerArgs>
+              <source>1.8</source>
+              <showDeprecation>true</showDeprecation>
+              <target>1.8</target>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

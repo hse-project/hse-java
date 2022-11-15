@@ -21,6 +21,7 @@ public final class TransactionTest {
 
     @BeforeAll
     public static void setupSuite() throws HseException {
+        TestUtils.registerShutdownHook();
         Hse.init("rest.enabled=false");
         kvdb = TestUtils.setupKvdb();
         kvs = TestUtils.setupKvs(kvdb, "kvs", null, new String[]{"transactions.enabled=true"});

@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 public final class HseTest {
     @BeforeAll
     public static void setupSuite() throws HseException {
+        TestUtils.registerShutdownHook();
         Hse.init("rest.enabled=false");
     }
 

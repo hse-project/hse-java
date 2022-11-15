@@ -5,7 +5,8 @@
 
 package io.github.hse_project.hse;
 
-import java.nio.file.FileSystems;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -15,9 +16,40 @@ import jnr.constants.platform.Errno;
 public final class TestUtils {
     public static Path kvdbHome = Optional.ofNullable(System.getProperty("home"))
         .map(Paths::get)
-        .orElse(FileSystems.getDefault().getPath(".").toAbsolutePath());
+        .orElse(defaultHome());
 
     private TestUtils() {}
+
+    private static Path defaultHome() {
+        String directory;
+
+        directory = System.getenv("HSE_TEST_RUNNER_DIR");
+        if (directory == null) {
+            directory = System.getenv("MESON_BUILD_ROOT");
+            if (directory == null) {
+                directory = System.getProperty("java.io.tmpdir");
+            }
+        }
+
+        try {
+            return Files.createTempDirectory(Paths.get(directory),
+                String.format("mtest-%s-", System.getProperty("test")));
+        } catch (final IOException e) {
+            System.err.println(e.toString());
+            System.exit(1);
+            return null;
+        }
+    }
+
+    public static void registerShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                try {
+                    Files.delete(TestUtils.kvdbHome);
+                } catch (final IOException e) { }
+            }
+        });
+    }
 
     public static Kvdb setupKvdb() throws HseException {
         return setupKvdb(null, null);

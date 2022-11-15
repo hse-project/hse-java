@@ -32,6 +32,7 @@ public final class CursorTest {
 
     @BeforeAll
     public static void setupSuite() throws HseException {
+        TestUtils.registerShutdownHook();
         Hse.init("rest.enabled=false");
         kvdb = TestUtils.setupKvdb();
     }
