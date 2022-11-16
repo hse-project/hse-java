@@ -19,7 +19,7 @@ foreach t : tests
             '-P',
             'meson',
             'test',
-            '-Dtest=@0@.@1@'.format(package, t),
+            '-Dtest=@0@.@1@.@2@'.format(group_id.replace('-', '_'), artifact_id, t),
             '-Dmeson.build_root=@0@'.format(meson.project_build_root()),
         ],
         suite: ['unit'],
