@@ -1,15 +1,17 @@
+preprocessed_group_id = group_id.replace('.', '/').replace('-', '_')
+
 java_sources = files(
-    '@0@/@1@/Hse.java'.format(group_id.replace('.', '/'), artifact_id),
-    '@0@/@1@/HseException.java'.format(group_id.replace('.', '/'), artifact_id),
-    '@0@/@1@/Kvdb.java'.format(group_id.replace('.', '/'), artifact_id),
-    '@0@/@1@/KvdbTransaction.java'.format(group_id.replace('.', '/'), artifact_id),
-    '@0@/@1@/Kvs.java'.format(group_id.replace('.', '/'), artifact_id),
-    '@0@/@1@/KvsCursor.java'.format(group_id.replace('.', '/'), artifact_id),
-    '@0@/@1@/Limits.java'.format(group_id.replace('.', '/'), artifact_id),
-    '@0@/@1@/Mclass.java'.format(group_id.replace('.', '/'), artifact_id),
-    '@0@/@1@/MclassInfo.java'.format(group_id.replace('.', '/'), artifact_id),
-    '@0@/@1@/NativeObject.java'.format(group_id.replace('.', '/'), artifact_id),
-    '@0@/@1@/Version.java'.format(group_id.replace('.', '/'), artifact_id),
+    '@0@/@1@/Hse.java'.format(preprocessed_group_id, artifact_id),
+    '@0@/@1@/HseException.java'.format(preprocessed_group_id, artifact_id),
+    '@0@/@1@/Kvdb.java'.format(preprocessed_group_id, artifact_id),
+    '@0@/@1@/KvdbTransaction.java'.format(preprocessed_group_id, artifact_id),
+    '@0@/@1@/Kvs.java'.format(preprocessed_group_id, artifact_id),
+    '@0@/@1@/KvsCursor.java'.format(preprocessed_group_id, artifact_id),
+    '@0@/@1@/Limits.java'.format(preprocessed_group_id, artifact_id),
+    '@0@/@1@/Mclass.java'.format(preprocessed_group_id, artifact_id),
+    '@0@/@1@/MclassInfo.java'.format(preprocessed_group_id, artifact_id),
+    '@0@/@1@/NativeObject.java'.format(preprocessed_group_id, artifact_id),
+    '@0@/@1@/Version.java'.format(preprocessed_group_id, artifact_id),
 )
 
 hse_jar = custom_target(

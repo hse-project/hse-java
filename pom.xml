@@ -7,7 +7,7 @@
   <description>HSE is a fast embeddable key-value store designed for SSDs and persistent memory.</description>
   <url>https://github.com/hse-project</url>
 
-  <groupId>io.github.hse_project</groupId>
+  <groupId>io.github.hse-project</groupId>
   <artifactId>hse</artifactId>
   <version>3.1.0</version>
 

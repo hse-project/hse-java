@@ -1,12 +1,14 @@
+preprocessed_group_id = group_id.replace('.', '_').replace('-', '_')
+
 c_sources = files(
-    '@0@_@1@_Hse.c'.format(group_id.replace('.', '_'), artifact_id),
-    '@0@_@1@_Kvdb.c'.format(group_id.replace('.', '_'), artifact_id),
-    '@0@_@1@_Kvdb_CompactStatus.c'.format(group_id.replace('.', '_'), artifact_id),
-    '@0@_@1@_KvdbTransaction.c'.format(group_id.replace('.', '_'), artifact_id),
-    '@0@_@1@_Kvs.c'.format(group_id.replace('.', '_'), artifact_id),
-    '@0@_@1@_KvsCursor.c'.format(group_id.replace('.', '_'), artifact_id),
-    '@0@_@1@_MclassInfo.c'.format(group_id.replace('.', '_'), artifact_id),
-    '@0@_@1@_Version.c'.format(group_id.replace('.', '_'), artifact_id),
+    '@0@_@1@_Hse.c'.format(preprocessed_group_id, artifact_id),
+    '@0@_@1@_Kvdb.c'.format(preprocessed_group_id, artifact_id),
+    '@0@_@1@_Kvdb_CompactStatus.c'.format(preprocessed_group_id, artifact_id),
+    '@0@_@1@_KvdbTransaction.c'.format(preprocessed_group_id, artifact_id),
+    '@0@_@1@_Kvs.c'.format(preprocessed_group_id, artifact_id),
+    '@0@_@1@_KvsCursor.c'.format(preprocessed_group_id, artifact_id),
+    '@0@_@1@_MclassInfo.c'.format(preprocessed_group_id, artifact_id),
+    '@0@_@1@_Version.c'.format(preprocessed_group_id, artifact_id),
     'hsejni.c'
 )
 
