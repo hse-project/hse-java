@@ -25,9 +25,6 @@ foreach t : tests
         suite: ['unit'],
         timeout: 120,
         is_parallel : false,
-        depends: [hsejni],
-        env: environment({
-            'HSE_TEST_RUNNER_RUNNER': 'java',
-        })
+        depends: [hsejni]
     )
 endforeach
