@@ -42,7 +42,7 @@ Add something like the following to your `pom.xml` or equivalent file:
 
 ```xml
 <dependency>
-  <groupId>io.github.hse_project</groupId>
+  <groupId>io.github.hse-project</groupId>
   <artifactId>hse</artifactId>
   <version>${hse.version}</version>
 <dependency>
