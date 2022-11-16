@@ -36,7 +36,7 @@ jobs:
     needs:
       - determine-tag
     container:
-      image: ghcr.io/hse-project/ci-images/fedora-36:${{ needs.determine-tag.outputs.tag }}
+      image: ghcr.io/hse-project/ci-images/fedora-37:${{ needs.determine-tag.outputs.tag }}
 
     steps:
       - name: Checkout hse-java
