@@ -53,8 +53,8 @@ struct globals {
                     } MclassInfo;
                 } hse;
             } hse_project;
-        } micron;
-    } com;
+        } github;
+    } io;
     struct {
         struct {
             struct {
