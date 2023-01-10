@@ -58,7 +58,7 @@
     <jar-plugin.version>3.3.0</jar-plugin.version>
     <javadoc-plugin.version>3.4.1</javadoc-plugin.version>
     <jnr-constants.version>0.10.4</jnr-constants.version>
-    <junit.version>5.9.1</junit.version>
+    <junit.version>5.9.2</junit.version>
     <nexus-staging-plugin.version>1.6.13</nexus-staging-plugin.version>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
