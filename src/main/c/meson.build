@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+# SPDX-FileCopyrightText: Copyright 2021 Micron Technology, Inc.
+
 preprocessed_group_id = group_id.replace('.', '_').replace('-', '_')
 
 c_sources = files(
