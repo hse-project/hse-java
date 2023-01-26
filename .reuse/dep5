@@ -1,0 +1,6 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Source: https://github.com/hse-project/hse-java
+
+Files: scripts/dev/checkoss-ignore-words.txt
+Copyright: Copyright 2020 Micron Technology, Inc.
+License: Apache-2.0 OR MIT
