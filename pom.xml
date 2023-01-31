@@ -64,7 +64,7 @@ SPDX-FileCopyrightText: Copyright 2021 Micron Technology, Inc.
   <properties>
     <compiler-plugin.version>3.10.1</compiler-plugin.version>
     <checkstyle-plugin.version>3.2.1</checkstyle-plugin.version>
-    <checkstyle.version>10.6.0</checkstyle.version>
+    <checkstyle.version>10.7.0</checkstyle.version>
     <gpg-plugin.version>3.0.1</gpg-plugin.version>
     <jar-plugin.version>3.3.0</jar-plugin.version>
     <javadoc-plugin.version>3.4.1</javadoc-plugin.version>
