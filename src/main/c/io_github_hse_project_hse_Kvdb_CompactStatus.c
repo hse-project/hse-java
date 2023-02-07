@@ -3,15 +3,16 @@
  * SPDX-FileCopyrightText: Copyright 2021 Micron Technology, Inc.
  */
 
-#include <hse/hse.h>
 #include <jni.h>
+
+#include <hse/hse.h>
 
 #ifdef HSE_JAVA_EXPERIMENTAL
 #include <hse/experimental.h>
 #endif
 
-#include "io_github_hse_project_hse_Kvdb_CompactStatus.h"
 #include "hsejni.h"
+#include "io_github_hse_project_hse_Kvdb_CompactStatus.h"
 
 void
 Java_io_github_hse_1project_hse_Kvdb_00024CompactStatus_get(
@@ -31,37 +32,27 @@ Java_io_github_hse_1project_hse_Kvdb_00024CompactStatus_get(
     }
 
     (*env)->SetIntField(
-        env,
-        compact_status_obj,
-        globals.io.github.hse_project.hse.Kvdb.CompactStatus.sampLwm,
+        env, compact_status_obj, globals.io.github.hse_project.hse.Kvdb.CompactStatus.sampLwm,
         compact_status.kvcs_samp_lwm);
     if ((*env)->ExceptionCheck(env))
         return;
     (*env)->SetIntField(
-        env,
-        compact_status_obj,
-        globals.io.github.hse_project.hse.Kvdb.CompactStatus.sampHwm,
+        env, compact_status_obj, globals.io.github.hse_project.hse.Kvdb.CompactStatus.sampHwm,
         compact_status.kvcs_samp_hwm);
     if ((*env)->ExceptionCheck(env))
         return;
     (*env)->SetIntField(
-        env,
-        compact_status_obj,
-        globals.io.github.hse_project.hse.Kvdb.CompactStatus.sampCurr,
+        env, compact_status_obj, globals.io.github.hse_project.hse.Kvdb.CompactStatus.sampCurr,
         compact_status.kvcs_samp_curr);
     if ((*env)->ExceptionCheck(env))
         return;
     (*env)->SetBooleanField(
-        env,
-        compact_status_obj,
-        globals.io.github.hse_project.hse.Kvdb.CompactStatus.active,
+        env, compact_status_obj, globals.io.github.hse_project.hse.Kvdb.CompactStatus.active,
         compact_status.kvcs_active);
     if ((*env)->ExceptionCheck(env))
         return;
     (*env)->SetBooleanField(
-        env,
-        compact_status_obj,
-        globals.io.github.hse_project.hse.Kvdb.CompactStatus.canceled,
+        env, compact_status_obj, globals.io.github.hse_project.hse.Kvdb.CompactStatus.canceled,
         compact_status.kvcs_canceled);
     if ((*env)->ExceptionCheck(env))
         return;
@@ -70,8 +61,7 @@ Java_io_github_hse_1project_hse_Kvdb_00024CompactStatus_get(
     (void)kvdb_handle;
 
     (*env)->ThrowNew(
-        env,
-        globals.java.lang.UnsupportedOperationException.class,
+        env, globals.java.lang.UnsupportedOperationException.class,
         "Experimental support is not enabled");
 #endif
 }

@@ -3,14 +3,14 @@
  * SPDX-FileCopyrightText: Copyright 2021 Micron Technology, Inc.
  */
 
+#include <jni.h>
 #include <stddef.h>
 #include <stdlib.h>
 
 #include <hse/hse.h>
-#include <jni.h>
 
-#include "io_github_hse_project_hse_Hse.h"
 #include "hsejni.h"
+#include "io_github_hse_project_hse_Hse.h"
 
 jstring
 Java_io_github_hse_1project_hse_Hse_cgetParam(JNIEnv *env, jclass hse_cls, jstring param)
@@ -19,7 +19,7 @@ Java_io_github_hse_1project_hse_Hse_cgetParam(JNIEnv *env, jclass hse_cls, jstri
     hse_err_t err = 0;
     size_t needed_sz;
     jstring value = NULL;
-    const char *param_chars = NULL;;
+    const char *param_chars = NULL;
 
     (void)env;
     (void)hse_cls;
@@ -36,8 +36,7 @@ Java_io_github_hse_1project_hse_Hse_cgetParam(JNIEnv *env, jclass hse_cls, jstri
     buf = malloc((needed_sz + 1) * sizeof(*buf));
     if (!buf) {
         (*env)->ThrowNew(
-            env,
-            globals.java.lang.OutOfMemoryError.class,
+            env, globals.java.lang.OutOfMemoryError.class,
             "Failed to allocate memory for parameter buffer");
         goto out;
     }

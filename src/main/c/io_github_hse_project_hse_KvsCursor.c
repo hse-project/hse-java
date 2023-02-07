@@ -4,15 +4,16 @@
  */
 
 #include <assert.h>
+#include <jni.h>
 #include <stdint.h>
 #include <string.h>
+
 #include <sys/param.h>
 
 #include <hse/hse.h>
-#include <jni.h>
 
-#include "io_github_hse_project_hse_KvsCursor.h"
 #include "hsejni.h"
+#include "io_github_hse_project_hse_KvsCursor.h"
 
 jlong
 Java_io_github_hse_1project_hse_KvsCursor_create__J_3BIIJ(
@@ -162,8 +163,7 @@ Java_io_github_hse_1project_hse_KvsCursor_read__JI(
     key_array = (*env)->NewByteArray(env, key_len);
     if (!key_array) {
         (*env)->ThrowNew(
-            env,
-            globals.java.lang.OutOfMemoryError.class,
+            env, globals.java.lang.OutOfMemoryError.class,
             "Failed to allocate memory for key array");
         return NULL;
     }
@@ -171,8 +171,7 @@ Java_io_github_hse_1project_hse_KvsCursor_read__JI(
     value_array = (*env)->NewByteArray(env, value_len);
     if (!value_array) {
         (*env)->ThrowNew(
-            env,
-            globals.java.lang.OutOfMemoryError.class,
+            env, globals.java.lang.OutOfMemoryError.class,
             "Failed to allocate memory for value array");
         return NULL;
     }
@@ -187,11 +186,8 @@ Java_io_github_hse_1project_hse_KvsCursor_read__JI(
     assert(!(*env)->ExceptionCheck(env));
 
     return (*env)->NewObject(
-        env,
-        globals.java.util.AbstractMap.SimpleImmutableEntry.class,
-        globals.java.util.AbstractMap.SimpleImmutableEntry.init,
-        key_array,
-        value_array);
+        env, globals.java.util.AbstractMap.SimpleImmutableEntry.class,
+        globals.java.util.AbstractMap.SimpleImmutableEntry.init, key_array, value_array);
 }
 
 jobject
@@ -223,14 +219,7 @@ Java_io_github_hse_1project_hse_KvsCursor_read__J_3BI_3BII(
         value_buf_data = (*env)->GetByteArrayElements(env, value_buf, NULL);
 
     err = hse_kvs_cursor_read_copy(
-        cursor,
-        flags,
-        key_buf_data,
-        key_buf_sz,
-        &key_len,
-        value_buf_data,
-        value_buf_sz,
-        &value_len,
+        cursor, flags, key_buf_data, key_buf_sz, &key_len, value_buf_data, value_buf_sz, &value_len,
         &eof);
 
     if (key_buf)
@@ -255,11 +244,8 @@ Java_io_github_hse_1project_hse_KvsCursor_read__J_3BI_3BII(
         env, globals.java.lang.Integer.class, globals.java.lang.Integer.init, value_len);
 
     return (*env)->NewObject(
-        env,
-        globals.java.util.AbstractMap.SimpleImmutableEntry.class,
-        globals.java.util.AbstractMap.SimpleImmutableEntry.init,
-        key_len_obj,
-        value_len_obj);
+        env, globals.java.util.AbstractMap.SimpleImmutableEntry.class,
+        globals.java.util.AbstractMap.SimpleImmutableEntry.init, key_len_obj, value_len_obj);
 }
 
 jobject
@@ -296,14 +282,7 @@ Java_io_github_hse_1project_hse_KvsCursor_read__J_3BILjava_nio_ByteBuffer_2III(
     }
 
     err = hse_kvs_cursor_read_copy(
-        cursor,
-        flags,
-        key_buf_data,
-        key_buf_sz,
-        &key_len,
-        value_buf_data,
-        value_buf_sz,
-        &value_len,
+        cursor, flags, key_buf_data, key_buf_sz, &key_len, value_buf_data, value_buf_sz, &value_len,
         &eof);
 
     if (key_buf)
@@ -325,11 +304,8 @@ Java_io_github_hse_1project_hse_KvsCursor_read__J_3BILjava_nio_ByteBuffer_2III(
         env, globals.java.lang.Integer.class, globals.java.lang.Integer.init, value_len);
 
     return (*env)->NewObject(
-        env,
-        globals.java.util.AbstractMap.SimpleImmutableEntry.class,
-        globals.java.util.AbstractMap.SimpleImmutableEntry.init,
-        key_len_obj,
-        value_len_obj);
+        env, globals.java.util.AbstractMap.SimpleImmutableEntry.class,
+        globals.java.util.AbstractMap.SimpleImmutableEntry.init, key_len_obj, value_len_obj);
 }
 
 jobject
@@ -367,14 +343,7 @@ Java_io_github_hse_1project_hse_KvsCursor_read__JLjava_nio_ByteBuffer_2II_3BII(
         value_buf_data = (*env)->GetByteArrayElements(env, value_buf, NULL);
 
     err = hse_kvs_cursor_read_copy(
-        cursor,
-        flags,
-        key_buf_data,
-        key_buf_sz,
-        &key_len,
-        value_buf_data,
-        value_buf_sz,
-        &value_len,
+        cursor, flags, key_buf_data, key_buf_sz, &key_len, value_buf_data, value_buf_sz, &value_len,
         &eof);
 
     if (value_buf)
@@ -397,11 +366,8 @@ Java_io_github_hse_1project_hse_KvsCursor_read__JLjava_nio_ByteBuffer_2II_3BII(
         env, globals.java.lang.Integer.class, globals.java.lang.Integer.init, value_len);
 
     return (*env)->NewObject(
-        env,
-        globals.java.util.AbstractMap.SimpleImmutableEntry.class,
-        globals.java.util.AbstractMap.SimpleImmutableEntry.init,
-        key_len_obj,
-        value_len_obj);
+        env, globals.java.util.AbstractMap.SimpleImmutableEntry.class,
+        globals.java.util.AbstractMap.SimpleImmutableEntry.init, key_len_obj, value_len_obj);
 }
 
 jobject
@@ -444,14 +410,7 @@ Java_io_github_hse_1project_hse_KvsCursor_read__JLjava_nio_ByteBuffer_2IILjava_n
     }
 
     err = hse_kvs_cursor_read_copy(
-        cursor,
-        flags,
-        key_buf_data,
-        key_buf_sz,
-        &key_len,
-        value_buf_data,
-        value_buf_sz,
-        &value_len,
+        cursor, flags, key_buf_data, key_buf_sz, &key_len, value_buf_data, value_buf_sz, &value_len,
         &eof);
     if (err) {
         throw_new_hse_exception(env, err);
@@ -469,11 +428,8 @@ Java_io_github_hse_1project_hse_KvsCursor_read__JLjava_nio_ByteBuffer_2IILjava_n
         env, globals.java.lang.Integer.class, globals.java.lang.Integer.init, value_len);
 
     return (*env)->NewObject(
-        env,
-        globals.java.util.AbstractMap.SimpleImmutableEntry.class,
-        globals.java.util.AbstractMap.SimpleImmutableEntry.init,
-        key_len_obj,
-        value_len_obj);
+        env, globals.java.util.AbstractMap.SimpleImmutableEntry.class,
+        globals.java.util.AbstractMap.SimpleImmutableEntry.init, key_len_obj, value_len_obj);
 }
 
 jbyteArray
@@ -936,13 +892,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__J_3BI_3BII(
         filter_max_data = (*env)->GetByteArrayElements(env, filter_max, NULL);
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_min)
@@ -999,13 +949,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_lang_String_2I(
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (err) {
@@ -1060,13 +1004,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_nio_ByteBuffer_2
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_min)
@@ -1122,13 +1060,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2_3BII(
         filter_max_data = (*env)->GetByteArrayElements(env, filter_max, NULL);
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_min)
@@ -1188,13 +1120,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_l
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_min)
@@ -1255,13 +1181,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_n
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (err) {
@@ -1317,13 +1237,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_3
         filter_max_data = (*env)->GetByteArrayElements(env, filter_max, NULL);
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_max)
@@ -1384,13 +1298,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IILj
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (err) {
@@ -1451,13 +1359,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IILj
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (err) {
@@ -1508,13 +1410,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__J_3BI_3BI_3BII(
         filter_max_data = (*env)->GetByteArrayElements(env, filter_max, NULL);
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_min)
@@ -1570,13 +1466,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__J_3BI_3BILjava_nio_ByteBuff
         filter_max_data = (*env)->GetByteArrayElements(env, filter_max, NULL);
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_min)
@@ -1634,13 +1524,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_lang_String_2_3B
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_min)
@@ -1698,13 +1582,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_lang_String_2Lja
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_min)
@@ -1765,13 +1643,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_nio_ByteBuffer_2
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_min)
@@ -1830,13 +1702,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__J_3BILjava_nio_ByteBuffer_2
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_min)
@@ -1893,13 +1759,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2_3BI_3B
         filter_max_data = (*env)->GetByteArrayElements(env, filter_max, NULL);
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_min)
@@ -1958,13 +1818,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2_3BILja
         filter_max_data = (*env)->GetByteArrayElements(env, filter_max, NULL);
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_min)
@@ -2025,13 +1879,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_l
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_min)
@@ -2092,13 +1940,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_l
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_min)
@@ -2162,13 +2004,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_n
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_min)
@@ -2230,13 +2066,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_lang_String_2Ljava_n
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_min)
@@ -2296,13 +2126,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_3
         filter_max_data = (*env)->GetByteArrayElements(env, filter_max, NULL);
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_max)
@@ -2362,13 +2186,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2II_3
         filter_max_data = (*env)->GetByteArrayElements(env, filter_max, NULL);
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_max)
@@ -2430,13 +2248,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IILj
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_max)
@@ -2498,13 +2310,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IILj
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (filter_max)
@@ -2569,13 +2375,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IILj
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
 
     if (err) {
@@ -2637,13 +2437,7 @@ Java_io_github_hse_1project_hse_KvsCursor_seekRange__JLjava_nio_ByteBuffer_2IILj
     }
 
     err = hse_kvs_cursor_seek_range(
-        cursor,
-        flags,
-        filter_min_data,
-        filter_min_len,
-        filter_max_data,
-        filter_max_len,
-        &found,
+        cursor, flags, filter_min_data, filter_min_len, filter_max_data, filter_max_len, &found,
         &found_len);
     if (err) {
         throw_new_hse_exception(env, err);

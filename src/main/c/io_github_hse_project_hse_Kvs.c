@@ -4,14 +4,14 @@
  */
 
 #include <assert.h>
+#include <jni.h>
 #include <stdbool.h>
 #include <stdint.h>
 
 #include <hse/hse.h>
-#include <jni.h>
 
-#include "io_github_hse_project_hse_Kvs.h"
 #include "hsejni.h"
+#include "io_github_hse_project_hse_Kvs.h"
 
 void
 Java_io_github_hse_1project_hse_Kvs_create(
@@ -240,8 +240,7 @@ Java_io_github_hse_1project_hse_Kvs_get__J_3BIIJ(
     value_data = malloc(HSE_KVS_VALUE_LEN_MAX * sizeof(*value_data));
     if (!value_data) {
         (*env)->ThrowNew(
-            env,
-            globals.java.lang.OutOfMemoryError.class,
+            env, globals.java.lang.OutOfMemoryError.class,
             "Failed to allocate memory for value buffer");
         return NULL;
     }
@@ -263,8 +262,7 @@ Java_io_github_hse_1project_hse_Kvs_get__J_3BIIJ(
     value = (*env)->NewByteArray(env, value_len);
     if (!value) {
         (*env)->ThrowNew(
-            env,
-            globals.java.lang.OutOfMemoryError.class,
+            env, globals.java.lang.OutOfMemoryError.class,
             "Failed to allocate memory for value byte array");
         goto out;
     }
@@ -312,8 +310,7 @@ Java_io_github_hse_1project_hse_Kvs_get__JLjava_lang_String_2IJ(
     value_data = malloc(HSE_KVS_VALUE_LEN_MAX * sizeof(*value_data));
     if (!value_data) {
         (*env)->ThrowNew(
-            env,
-            globals.java.lang.OutOfMemoryError.class,
+            env, globals.java.lang.OutOfMemoryError.class,
             "Failed to allocate memory for value buffer");
         return NULL;
     }
@@ -335,8 +332,7 @@ Java_io_github_hse_1project_hse_Kvs_get__JLjava_lang_String_2IJ(
     value = (*env)->NewByteArray(env, value_len);
     if (!value) {
         (*env)->ThrowNew(
-            env,
-            globals.java.lang.OutOfMemoryError.class,
+            env, globals.java.lang.OutOfMemoryError.class,
             "Failed to allocate memory for value byte array");
         goto out;
     }
@@ -387,8 +383,7 @@ Java_io_github_hse_1project_hse_Kvs_get__JLjava_nio_ByteBuffer_2IIIJ(
     value_data = malloc(HSE_KVS_VALUE_LEN_MAX * sizeof(*value_data));
     if (!value_data) {
         (*env)->ThrowNew(
-            env,
-            globals.java.lang.OutOfMemoryError.class,
+            env, globals.java.lang.OutOfMemoryError.class,
             "Failed to allocate memory for value buffer");
         return NULL;
     }
@@ -406,8 +401,7 @@ Java_io_github_hse_1project_hse_Kvs_get__JLjava_nio_ByteBuffer_2IIIJ(
     value = (*env)->NewByteArray(env, value_len);
     if (!value) {
         (*env)->ThrowNew(
-            env,
-            globals.java.lang.OutOfMemoryError.class,
+            env, globals.java.lang.OutOfMemoryError.class,
             "Failed to allocate memory for value byte array");
         goto out;
     }
@@ -836,8 +830,7 @@ Java_io_github_hse_1project_hse_Kvs_getParam(
     buf = malloc((needed_sz + 1) * sizeof(*buf));
     if (!buf) {
         (*env)->ThrowNew(
-            env,
-            globals.java.lang.OutOfMemoryError.class,
+            env, globals.java.lang.OutOfMemoryError.class,
             "Failed to allocate memory for parameter buffer");
         goto out;
     }

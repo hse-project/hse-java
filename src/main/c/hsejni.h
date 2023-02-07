@@ -7,6 +7,7 @@
 #define HSE_JAVA_COMMON_H
 
 #include <jni.h>
+
 #include <hse/types.h>
 
 /* This object is populated during the JNI_OnLoad() function. It saves various
