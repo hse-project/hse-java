@@ -189,7 +189,13 @@ jobs:
       - name: Build
         if: ${{ steps.to-skip.outputs.skip == 'false' }}
         run: |
-          ninja -C builddir
+          DOCS_TARGET=
+          if [ "${{ matrix.image }}" != "ubuntu-18.04" ]; then
+            # javadoc is not available on Ubuntu 18.04
+            DOCS_TARGET="docs/apidocs"
+          fi
+
+          ninja -C builddir all $DOCS_TARGET
 
       - name: Test
         if: ${{ steps.to-skip.outputs.skip == 'false' && !startsWith(matrix.image, 'cross') }}
