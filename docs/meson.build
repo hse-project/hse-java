@@ -4,7 +4,7 @@
 
 javadocs = custom_target(
     'javadocs',
-    build_by_default: true,
+    build_by_default: false,
     input: [
         java_sources,
         pom_file,
