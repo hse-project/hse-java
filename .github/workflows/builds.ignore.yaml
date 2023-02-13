@@ -9,30 +9,30 @@ on:
     branches:
       - master
       - "v[0-9]+.[0-9]+"
-    paths:
-      - "**.md"
-      - ".github/ISSUE_TEMPLATE/**"
-      - ".github/workflows/**"
-      - "!.github/workflows/builds.yaml"
-      - .clang-format
-      - .gitattributes
-      - .github/dependabot.yaml
-      - .gitignore
-      - .shellcheckrc
-      - LICENSE
+    paths-ignore:
+      - "**.c"
+      - "**.h"
+      - "**.java"
+      - "**/meson.build"
+      - "subprojects/*.wrap"
+      - "cross/*.ini"
+      - .github/workflows/builds.yaml
+      - meson_options.txt
+      - pom.xml
+      - VERSION
   pull_request:
     types: [opened, synchronize, reopened]
-    paths:
-      - "**.md"
-      - ".github/ISSUE_TEMPLATE/**"
-      - ".github/workflows/**"
-      - "!.github/workflows/builds.yaml"
-      - .clang-format
-      - .gitattributes
-      - .github/dependabot.yaml
-      - .gitignore
-      - .shellcheckrc
-      - LICENSE
+    paths-ignore:
+      - "**.c"
+      - "**.h"
+      - "**.java"
+      - "**/meson.build"
+      - "subprojects/*.wrap"
+      - "cross/*.ini"
+      - .github/workflows/builds.yaml
+      - meson_options.txt
+      - pom.xml
+      - VERSION
 
 concurrency:
   group: ${{ github.workflow }}-ignore-${{ github.head_ref }}
