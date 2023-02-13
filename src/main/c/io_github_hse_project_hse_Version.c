@@ -3,8 +3,9 @@
  * SPDX-FileCopyrightText: Copyright 2021 Micron Technology, Inc.
  */
 
-#include <hse/version.h>
 #include <jni.h>
+
+#include <hse/version.h>
 
 #include "io_github_hse_project_hse_Version.h"
 

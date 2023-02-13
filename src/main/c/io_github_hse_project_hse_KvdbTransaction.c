@@ -4,12 +4,12 @@
  */
 
 #include <assert.h>
-
-#include <hse/hse.h>
 #include <jni.h>
 
-#include "io_github_hse_project_hse_KvdbTransaction.h"
+#include <hse/hse.h>
+
 #include "hsejni.h"
+#include "io_github_hse_project_hse_KvdbTransaction.h"
 
 jlong
 Java_io_github_hse_1project_hse_KvdbTransaction_alloc(
@@ -115,14 +115,14 @@ Java_io_github_hse_1project_hse_KvdbTransaction_getState(
     state = hse_kvdb_txn_state_get(kvdb, txn);
 
     switch (state) {
-        case HSE_KVDB_TXN_ABORTED:
-            return globals.io.github.hse_project.hse.KvdbTransaction.State.ABORTED;
-        case HSE_KVDB_TXN_ACTIVE:
-            return globals.io.github.hse_project.hse.KvdbTransaction.State.ACTIVE;
-        case HSE_KVDB_TXN_COMMITTED:
-            return globals.io.github.hse_project.hse.KvdbTransaction.State.COMMITTED;
-        case HSE_KVDB_TXN_INVALID:
-            return globals.io.github.hse_project.hse.KvdbTransaction.State.INVALID;
+    case HSE_KVDB_TXN_ABORTED:
+        return globals.io.github.hse_project.hse.KvdbTransaction.State.ABORTED;
+    case HSE_KVDB_TXN_ACTIVE:
+        return globals.io.github.hse_project.hse.KvdbTransaction.State.ACTIVE;
+    case HSE_KVDB_TXN_COMMITTED:
+        return globals.io.github.hse_project.hse.KvdbTransaction.State.COMMITTED;
+    case HSE_KVDB_TXN_INVALID:
+        return globals.io.github.hse_project.hse.KvdbTransaction.State.INVALID;
     }
 
     abort();

@@ -4,10 +4,10 @@
  */
 
 #include <assert.h>
+#include <jni.h>
 #include <stdlib.h>
 
 #include <hse/hse.h>
-#include <jni.h>
 
 #include "hsejni.h"
 
@@ -41,8 +41,7 @@ to_paramv(JNIEnv *env, jobjectArray params, jsize *paramc, const char ***paramv)
     tmp_pv = malloc(tmp_pc * sizeof(char *));
     if (!tmp_pv) {
         (*env)->ThrowNew(
-            env,
-            globals.java.lang.OutOfMemoryError.class,
+            env, globals.java.lang.OutOfMemoryError.class,
             "Failed to allocate memory for C-string paramater array");
         return;
     }
@@ -89,8 +88,7 @@ throw_new_hse_exception(JNIEnv *env, hse_err_t err)
     buf = malloc((needed_sz + 1) * sizeof(*buf));
     if (!buf)
         return (*env)->ThrowNew(
-            env,
-            globals.java.lang.OutOfMemoryError.class,
+            env, globals.java.lang.OutOfMemoryError.class,
             "Failed to allocate memory for error buffer");
 
     hse_strerror(err, buf, needed_sz + 1);
@@ -104,22 +102,18 @@ throw_new_hse_exception(JNIEnv *env, hse_err_t err)
     ctx = hse_err_to_ctx(err);
 
     switch (ctx) {
-        case HSE_ERR_CTX_NONE:
-            context_obj = globals.io.github.hse_project.hse.HseException.Context.NONE;
-            break;
-        case HSE_ERR_CTX_TXN_EXPIRED:
-            context_obj = globals.io.github.hse_project.hse.HseException.Context.TXN_EXPIRED;
+    case HSE_ERR_CTX_NONE:
+        context_obj = globals.io.github.hse_project.hse.HseException.Context.NONE;
+        break;
+    case HSE_ERR_CTX_TXN_EXPIRED:
+        context_obj = globals.io.github.hse_project.hse.HseException.Context.TXN_EXPIRED;
     }
 
     assert(context_obj);
 
     hse_exception_obj = (*env)->NewObject(
-        env,
-        globals.io.github.hse_project.hse.HseException.class,
-        globals.io.github.hse_project.hse.HseException.init,
-        message,
-        rc,
-        context_obj);
+        env, globals.io.github.hse_project.hse.HseException.class,
+        globals.io.github.hse_project.hse.HseException.init, message, rc, context_obj);
     if ((*env)->ExceptionCheck(env))
         return JNI_ERR;
 
@@ -166,22 +160,17 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
     globals.io.github.hse_project.hse.HseException.class = (*env)->NewGlobalRef(env, local);
     ERROR_IF_REF_IS_NULL();
     globals.io.github.hse_project.hse.HseException.init = (*env)->GetMethodID(
-        env,
-        globals.io.github.hse_project.hse.HseException.class,
-        "<init>",
+        env, globals.io.github.hse_project.hse.HseException.class, "<init>",
         "(Ljava/lang/String;ILio/github/hse_project/hse/HseException$Context;)V");
     ASSERT_NO_EXCEPTION();
 
     local = (*env)->FindClass(env, "io/github/hse_project/hse/HseException$Context");
     ASSERT_NO_EXCEPTION();
-    globals.io.github.hse_project.hse.HseException.Context.class =
-        (*env)->NewGlobalRef(env, local);
+    globals.io.github.hse_project.hse.HseException.Context.class = (*env)->NewGlobalRef(env, local);
     ERROR_IF_REF_IS_NULL();
 
     field = (*env)->GetStaticFieldID(
-        env,
-        globals.io.github.hse_project.hse.HseException.Context.class,
-        "NONE",
+        env, globals.io.github.hse_project.hse.HseException.Context.class, "NONE",
         "Lio/github/hse_project/hse/HseException$Context;");
     ASSERT_NO_EXCEPTION();
     local = (*env)->GetStaticObjectField(
@@ -191,9 +180,7 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
     ERROR_IF_REF_IS_NULL();
 
     field = (*env)->GetStaticFieldID(
-        env,
-        globals.io.github.hse_project.hse.HseException.Context.class,
-        "TXN_EXPIRED",
+        env, globals.io.github.hse_project.hse.HseException.Context.class, "TXN_EXPIRED",
         "Lio/github/hse_project/hse/HseException$Context;");
     ASSERT_NO_EXCEPTION();
     local = (*env)->GetStaticObjectField(
@@ -230,9 +217,7 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
     ERROR_IF_REF_IS_NULL();
 
     field = (*env)->GetStaticFieldID(
-        env,
-        globals.io.github.hse_project.hse.KvdbTransaction.State.class,
-        "ABORTED",
+        env, globals.io.github.hse_project.hse.KvdbTransaction.State.class, "ABORTED",
         "Lio/github/hse_project/hse/KvdbTransaction$State;");
     ASSERT_NO_EXCEPTION();
     local = (*env)->GetStaticObjectField(
@@ -244,9 +229,7 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
     ERROR_IF_REF_IS_NULL();
 
     field = (*env)->GetStaticFieldID(
-        env,
-        globals.io.github.hse_project.hse.KvdbTransaction.State.class,
-        "ACTIVE",
+        env, globals.io.github.hse_project.hse.KvdbTransaction.State.class, "ACTIVE",
         "Lio/github/hse_project/hse/KvdbTransaction$State;");
     ASSERT_NO_EXCEPTION();
     local = (*env)->GetStaticObjectField(
@@ -258,9 +241,7 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
     ERROR_IF_REF_IS_NULL();
 
     field = (*env)->GetStaticFieldID(
-        env,
-        globals.io.github.hse_project.hse.KvdbTransaction.State.class,
-        "COMMITTED",
+        env, globals.io.github.hse_project.hse.KvdbTransaction.State.class, "COMMITTED",
         "Lio/github/hse_project/hse/KvdbTransaction$State;");
     ASSERT_NO_EXCEPTION();
     local = (*env)->GetStaticObjectField(
@@ -272,9 +253,7 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
     ERROR_IF_REF_IS_NULL();
 
     field = (*env)->GetStaticFieldID(
-        env,
-        globals.io.github.hse_project.hse.KvdbTransaction.State.class,
-        "INVALID",
+        env, globals.io.github.hse_project.hse.KvdbTransaction.State.class, "INVALID",
         "Lio/github/hse_project/hse/KvdbTransaction$State;");
     ASSERT_NO_EXCEPTION();
     local = (*env)->GetStaticObjectField(
@@ -332,9 +311,7 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
     globals.java.nio.file.Paths.class = (*env)->NewGlobalRef(env, local);
     ERROR_IF_REF_IS_NULL();
     globals.java.nio.file.Paths.get = (*env)->GetStaticMethodID(
-        env,
-        globals.java.nio.file.Paths.class,
-        "get",
+        env, globals.java.nio.file.Paths.class, "get",
         "(Ljava/lang/String;[Ljava/lang/String;)Ljava/nio/file/Path;");
     ASSERT_NO_EXCEPTION();
 
@@ -343,9 +320,7 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
     globals.java.util.AbstractMap.SimpleImmutableEntry.class = (*env)->NewGlobalRef(env, local);
     ERROR_IF_REF_IS_NULL();
     globals.java.util.AbstractMap.SimpleImmutableEntry.init = (*env)->GetMethodID(
-        env,
-        globals.java.util.AbstractMap.SimpleImmutableEntry.class,
-        "<init>",
+        env, globals.java.util.AbstractMap.SimpleImmutableEntry.class, "<init>",
         "(Ljava/lang/Object;Ljava/lang/Object;)V");
     ASSERT_NO_EXCEPTION();
 
@@ -360,9 +335,7 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
         env, globals.java.util.Optional.class, "of", "(Ljava/lang/Object;)Ljava/util/Optional;");
     ASSERT_NO_EXCEPTION();
     globals.java.util.Optional.ofNullable = (*env)->GetStaticMethodID(
-        env,
-        globals.java.util.Optional.class,
-        "ofNullable",
+        env, globals.java.util.Optional.class, "ofNullable",
         "(Ljava/lang/Object;)Ljava/util/Optional;");
     ASSERT_NO_EXCEPTION();
 
@@ -390,8 +363,7 @@ JNI_OnUnload(JavaVM *vm, void *reserved)
     (*env)->DeleteGlobalRef(env, globals.io.github.hse_project.hse.KvdbTransaction.State.class);
     (*env)->DeleteGlobalRef(env, globals.io.github.hse_project.hse.KvdbTransaction.State.ABORTED);
     (*env)->DeleteGlobalRef(env, globals.io.github.hse_project.hse.KvdbTransaction.State.ACTIVE);
-    (*env)->DeleteGlobalRef(
-        env, globals.io.github.hse_project.hse.KvdbTransaction.State.COMMITTED);
+    (*env)->DeleteGlobalRef(env, globals.io.github.hse_project.hse.KvdbTransaction.State.COMMITTED);
     (*env)->DeleteGlobalRef(env, globals.io.github.hse_project.hse.KvdbTransaction.State.INVALID);
     (*env)->DeleteGlobalRef(env, globals.io.github.hse_project.hse.MclassInfo.class);
     (*env)->DeleteGlobalRef(env, globals.java.io.EOFException.class);

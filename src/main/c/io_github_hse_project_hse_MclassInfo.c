@@ -3,11 +3,12 @@
  * SPDX-FileCopyrightText: Copyright 2021 Micron Technology, Inc.
  */
 
-#include <hse/hse.h>
 #include <jni.h>
 
-#include "io_github_hse_project_hse_MclassInfo.h"
+#include <hse/hse.h>
+
 #include "hsejni.h"
+#include "io_github_hse_project_hse_MclassInfo.h"
 
 void
 Java_io_github_hse_1project_hse_MclassInfo_get(
@@ -36,25 +37,18 @@ Java_io_github_hse_1project_hse_MclassInfo_get(
     if ((*env)->ExceptionCheck(env))
         return;
     path_obj = (*env)->CallStaticObjectMethod(
-        env,
-        globals.java.nio.file.Paths.class,
-        globals.java.nio.file.Paths.get,
-        path_str,
+        env, globals.java.nio.file.Paths.class, globals.java.nio.file.Paths.get, path_str,
         var_args);
     if ((*env)->ExceptionCheck(env))
         return;
 
     (*env)->SetLongField(
-        env,
-        mclass_info_obj,
-        globals.io.github.hse_project.hse.MclassInfo.allocatedBytes,
+        env, mclass_info_obj, globals.io.github.hse_project.hse.MclassInfo.allocatedBytes,
         info.mi_allocated_bytes);
     if ((*env)->ExceptionCheck(env))
         return;
     (*env)->SetLongField(
-        env,
-        mclass_info_obj,
-        globals.io.github.hse_project.hse.MclassInfo.usedBytes,
+        env, mclass_info_obj, globals.io.github.hse_project.hse.MclassInfo.usedBytes,
         info.mi_used_bytes);
     if ((*env)->ExceptionCheck(env))
         return;

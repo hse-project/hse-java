@@ -4,16 +4,16 @@
  */
 
 #include <assert.h>
+#include <jni.h>
 
 #include <hse/hse.h>
-#include <jni.h>
 
 #ifdef HSE_JAVA_EXPERIMENTAL
 #include <hse/experimental.h>
 #endif
 
-#include "io_github_hse_project_hse_Kvdb.h"
 #include "hsejni.h"
+#include "io_github_hse_project_hse_Kvdb.h"
 
 void
 Java_io_github_hse_1project_hse_Kvdb_addStorage(
@@ -161,8 +161,7 @@ Java_io_github_hse_1project_hse_Kvdb_compact(
     (void)flags;
 
     (*env)->ThrowNew(
-        env,
-        globals.java.lang.UnsupportedOperationException.class,
+        env, globals.java.lang.UnsupportedOperationException.class,
         "Experimental support is not enabled");
 #endif
 }
@@ -239,8 +238,7 @@ Java_io_github_hse_1project_hse_Kvdb_getParam(
     buf = malloc((needed_sz + 1) * sizeof(*buf));
     if (!buf) {
         (*env)->ThrowNew(
-            env,
-            globals.java.lang.OutOfMemoryError.class,
+            env, globals.java.lang.OutOfMemoryError.class,
             "Failed to allocate memory for parameter buffer");
         goto out;
     }
