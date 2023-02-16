@@ -16,7 +16,7 @@ c_sources = files(
     'hsejni.c'
 )
 
-native_headers = javamod.generate_native_headers(
+native_headers = javamod.native_headers(
     java_sources,
     package: package,
     classes: [

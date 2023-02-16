@@ -27,7 +27,7 @@ project(
         # options :).
         'force_fallback_for=lz4,cjson',
     ],
-    meson_version: '>= 0.62.0'
+    meson_version: '>=1.0.1'
 )
 
 version_components = meson.project_version().split('.')
