@@ -70,7 +70,7 @@ jobs:
           key: meson-packagecache-fedora-37-${{ hashFiles('subprojects/hse/subprojects/*.wrap') }}
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           config-file: .github/codeql/codeql-config.yaml
 
@@ -90,4 +90,4 @@ jobs:
           ninja -C builddir
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
