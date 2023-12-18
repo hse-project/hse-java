@@ -202,7 +202,7 @@ jobs:
         run: |
           meson test -C builddir --setup=ci --print-errorlogs --no-stdsplit
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: ${{ matrix.image }}-${{ matrix.buildtype }}
