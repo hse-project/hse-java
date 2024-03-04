@@ -64,7 +64,7 @@ jobs:
           path: subprojects/hse
 
       - name: Cache Meson packagecache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: subprojects/packagecache
           key: meson-packagecache-fedora-37-${{ hashFiles('subprojects/hse/subprojects/*.wrap') }}

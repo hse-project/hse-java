@@ -147,7 +147,7 @@ jobs:
       - name: Cache Maven dependencies
         id: maven-dependencies
         if: ${{ steps.to-skip.outputs.skip == 'false' }}
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.maven-local-repository.outputs.local-repository }}
           key: maven-dependencies-${{ hashFiles('pom.xml') }}
@@ -163,7 +163,7 @@ jobs:
       - name: Cache Meson packagecache
         if: ${{ steps.to-skip.outputs.skip == 'false' }}
         id: meson-packagecache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: subprojects/packagecache
           key: meson-packagecache-${{ matrix.image }}-${{ hashFiles('subprojects/hse/subprojects/*.wrap') }}

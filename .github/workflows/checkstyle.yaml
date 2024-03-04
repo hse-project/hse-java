@@ -32,7 +32,7 @@ jobs:
 
       - name: Cache Maven dependencies
         id: maven-dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.maven-local-repository.outputs.local-repository }}
           key: maven-dependencies-${{ hashFiles('pom.xml') }}
